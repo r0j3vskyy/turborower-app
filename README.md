@@ -73,3 +73,4 @@ osobę odpowiedzialną, a gotową zmianę druga osoba sprawdza przed scaleniem.
 
 - [ProjectDocumentation.pdf](docs/ProjectDocumentation.pdf)
 - [Presentation.pptx](docs/Presentation.pptx)
+- [Roadmap-v1.md](docs/roadmap-v1.md)
