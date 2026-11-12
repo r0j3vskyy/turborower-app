@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ "Rejestracja" if mode == "register" else "Logowanie" }} - TurboRower{% endblock %}
+{% block content %}
+<section class="auth-card">
+    <p class="eyebrow">Miejska mobilność</p>
+    <h1>{{ "Utwórz konto" if mode == "register" else "Zaloguj się" }}</h1>
+    <p class="muted">Zarządzaj swoimi przejazdami w TurboRower.</p>
+    <form method="post" class="form-stack">
+        {% if mode == "register" %}
+        <label for="name">Nazwa użytkownika</label>
+        <input id="name" name="name" value="{{ name|default('') }}" required>
+        {% endif %}
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" value="{{ email|default('') }}" required>
+        <label for="password">Hasło</label>
+        <input id="password" name="password" type="password" minlength="8" required>
+        <button type="submit">{{ "Utwórz konto" if mode == "register" else "Zaloguj się" }}</button>
+    </form>
+    {% if mode == "register" %}
+    <p class="switch-link">Masz już konto? <a href="{{ url_for('login') }}">Zaloguj się</a>.</p>
+    {% else %}
+    <p class="switch-link">Nie masz konta? <a href="{{ url_for('register') }}">Utwórz konto</a>.</p>
+    <p class="demo-hint">Demo: demo@turborower.local / demo1234</p>
+    {% endif %}
+</section>
+{% endblock %}
+

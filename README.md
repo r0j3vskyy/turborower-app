@@ -74,3 +74,27 @@ osobę odpowiedzialną, a gotową zmianę druga osoba sprawdza przed scaleniem.
 - [ProjectDocumentation.pdf](docs/ProjectDocumentation.pdf)
 - [Presentation.pptx](docs/Presentation.pptx)
 - [Roadmap-v1.md](docs/roadmap-v1.md)
+- [Technologie](docs/technologie.md)
+- [Prompty v1](docs/prompty-v1.md)
+- [Testy v1](docs/testy-v1.md)
+
+## Uruchomienie aplikacji v1
+
+Wymagany jest Python 3.13 lub nowszy Python 3.
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m database.init_db
+.\.venv\Scripts\python.exe -m flask --app app run
+```
+
+Otwórz następnie `http://127.0.0.1:5000`. Zatrzymanie serwera: `Ctrl+C`.
+
+### Konto demonstracyjne
+
+- **E-mail:** `demo@turborower.local`
+- **Hasło:** `demo1234`
+
+Można również utworzyć własne konto przez formularz rejestracji. Baza SQLite
+jest zapisywana lokalnie w `instance/turborower.db` i nie jest dodawana do Git.

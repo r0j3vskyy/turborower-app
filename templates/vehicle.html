@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ vehicle.code }} - TurboRower{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('vehicles') }}">← Wróć do pojazdów</a>
+<section class="detail-layout">
+    <div class="card detail-card">
+        <p class="eyebrow">W03 · Szczegóły pojazdu</p>
+        <h1>{{ vehicle.type }} {{ vehicle.code }}</h1>
+        <div class="stats">
+            <div><strong>{{ vehicle.battery_level }}%</strong><span>Bateria</span></div>
+            <div><strong>{{ vehicle.status }}</strong><span>Status</span></div>
+        </div>
+        {% if ride %}
+        <p class="status-text">Aktywny przejazd rozpoczęty {{ ride.started_at }}.</p>
+        <form method="post" action="{{ url_for('end_ride', ride_id=ride.id) }}">
+            <button type="submit">Zakończ przejazd</button>
+        </form>
+        {% elif reservation and reservation.status == "ACTIVE" %}
+        <p class="status-text">Rezerwacja ważna do {{ reservation.expires_at }}.</p>
+        <div class="actions">
+            <form method="post" action="{{ url_for('start_ride', reservation_id=reservation.id) }}">
+                <button type="submit">Rozpocznij przejazd</button>
+            </form>
+            <form method="post" action="{{ url_for('cancel_reservation', reservation_id=reservation.id) }}">
+                <button class="danger" type="submit">Anuluj rezerwację</button>
+            </form>
+        </div>
+        {% elif vehicle.status == "AVAILABLE" %}
+        <form method="post" action="{{ url_for('reserve_vehicle', vehicle_id=vehicle.id) }}">
+            <button type="submit">Zarezerwuj pojazd</button>
+        </form>
+        {% else %}
+        <p class="status-text">Ten pojazd nie jest obecnie dostępny.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
