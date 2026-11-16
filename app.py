@@ -4,7 +4,7 @@ import sqlite3
 from functools import wraps
 from typing import Any, Callable
 
-from flask import Flask, redirect, session, url_for
+from flask import Flask, flash, redirect, session, url_for
 
 from controllers.auth import login, logout, register
 from controllers.rides import end_ride, history, start_ride
@@ -30,8 +30,6 @@ def login_required(view: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(view)
     def wrapped_view(*args: Any, **kwargs: Any) -> Any:
         if "user_id" not in session:
-            from flask import flash
-
             flash("Zaloguj się, aby kontynuować.", "error")
             return redirect(url_for("login"))
         return view(*args, **kwargs)
