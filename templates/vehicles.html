@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Dostępne pojazdy - TurboRower{% endblock %}
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">W02 · Mapa i lista pojazdów</p>
+        <h1>Znajdź swój pojazd</h1>
+        <p class="muted">Wybierz dostępny rower lub hulajnogę i zarezerwuj ją na 15 minut.</p>
+    </div>
+</section>
+<section class="map-placeholder">
+    <span>MAPA POJAZDÓW</span>
+    <span class="map-dot dot-one"></span><span class="map-dot dot-two"></span><span class="map-dot dot-three"></span>
+</section>
+<section class="vehicle-grid">
+    {% for vehicle in vehicles %}
+    <article class="card vehicle-card">
+        <div class="vehicle-icon">{{ "🚲" if vehicle.type == "Rower" else "🛴" }}</div>
+        <div>
+            <p class="eyebrow">{{ vehicle.type }}</p>
+            <h2>{{ vehicle.code }}</h2>
+            <p class="muted">Bateria: {{ vehicle.battery_level }}% · Olsztyn</p>
+        </div>
+        <a class="button secondary" href="{{ url_for('vehicle_details', vehicle_id=vehicle.id) }}">Szczegóły</a>
+    </article>
+    {% else %}
+    <p class="empty-state">Brak dostępnych pojazdów.</p>
+    {% endfor %}
+</section>
+{% endblock %}
+

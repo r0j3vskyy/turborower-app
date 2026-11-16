@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Historia przejazdów - TurboRower{% endblock %}
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">W04 · Moje przejazdy</p>
+        <h1>Historia przejazdów</h1>
+        <p class="muted">Zobacz swoje zakończone przejazdy i naliczone opłaty.</p>
+    </div>
+    <div class="total-card"><span>Suma opłat</span><strong>{{ "%.2f"|format(total) }} zł</strong></div>
+</section>
+<section class="history-list">
+    {% for ride in rides %}
+    <article class="card history-row">
+        <div>
+            <p class="eyebrow">{{ ride.type }}</p>
+            <h2>{{ ride.code }}</h2>
+            <p class="muted">{{ ride.ended_at }} · {{ ride.duration_minutes }} min</p>
+        </div>
+        <strong>{{ "%.2f"|format(ride.cost) }} zł</strong>
+    </article>
+    {% else %}
+    <p class="empty-state">Nie masz jeszcze zakończonych przejazdów.</p>
+    {% endfor %}
+</section>
+{% endblock %}
+
