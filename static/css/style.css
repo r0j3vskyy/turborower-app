@@ -17,7 +17,7 @@ a { color: var(--teal); }
 .site-header { align-items: center; background: var(--navy); color: white; display: flex; justify-content: space-between; padding: 1rem max(1.25rem, calc((100% - 1100px) / 2)); }
 .brand { color: white; font-size: 1.35rem; font-weight: 800; text-decoration: none; }
 .brand { align-items: center; display: flex; gap: .65rem; }
-.brand img { height: 44px; object-fit: contain; width: 44px; }
+.brand img { height: 44px; max-width: 180px; object-fit: contain; width: auto;}
 .pricing-grid { display: grid; gap: 1rem; grid-template-columns: repeat(3, 1fr); }
 .pricing-card { padding: 1.5rem; }
 .pricing-card h2 { color: var(--teal); font-size: 2.2rem; margin-bottom: .35rem; }
