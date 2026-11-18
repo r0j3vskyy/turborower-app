@@ -6,3 +6,7 @@ instance/
 *.sqlite3
 .env
 
+# Tymczasowy plan wdrozenia Laboratorium 04
+lab4-plan.md
+
+

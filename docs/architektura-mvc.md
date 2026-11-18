@@ -32,6 +32,21 @@ Operacje zmieniające stan używają transakcji SQLite i zapytań parametryzowan
 Pojazd nie jest dostępny do rezerwacji, jeśli jego status zmienił się wcześniej
 na inny niż `AVAILABLE`.
 
+## Stan wdrażania MVC w tej gałęzi
+
+Obecnie część kodu jest nadal centralnie zorganizowana w `app.py`. Katalogi
+`controllers/` i `models/` z wcześniejszego commitu nie są jeszcze podłączone
+do aktywnych tras. W trakcie Laboratorium 04 będą one włączane etapami:
+
+1. `app.py` pozostaje punktem tworzenia aplikacji i rejestracji tras.
+2. Kontrolery odbierają żądanie HTTP i wywołują funkcje modeli.
+3. Modele wykonywać będą SQL i reguły biznesowe.
+4. Szablony Jinja będą odpowiedzialne wyłącznie za prezentację.
+
+Adresy URL i zachowanie aplikacji nie będą zmieniane podczas wydzielania
+warstw. Dodatkowe funkcje, takie jak `/activity`, `/pricing`, panel
+administratora i zgłoszenia usterki, będą podłączane do tej samej mapy MVC.
+
 ## Funkcje MVP i kryteria
 
 | Funkcja | Model | Widok | Kryterium poprawności |
