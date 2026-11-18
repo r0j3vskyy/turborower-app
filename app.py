@@ -586,6 +586,16 @@ def history() -> Any:
     return render_template("history.html", rides=rides, total=total)
 
 
+@app.get("/pricing")
+@login_required
+def pricing() -> Any:
+    return render_template(
+        "pricing.html",
+        start_fee=app.config["START_FEE"],
+        rate_per_minute=app.config["RATE_PER_MINUTE"],
+    )
+
+
 @app.get("/activity")
 @login_required
 def activity() -> Any:

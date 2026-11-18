@@ -22,10 +22,10 @@ document.addEventListener("DOMContentLoaded", function () {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap"
     }).addTo(map);
-    {% for vehicle in all_vehicles %}
+    {% for vehicle in vehicles %}
     L.marker([{{ vehicle.latitude }}, {{ vehicle.longitude }}])
         .addTo(map)
-        .bindPopup("<strong>{{ vehicle.code }}</strong><br>{{ vehicle.type }} · {{ vehicle.battery_level }}% · {{ vehicle.status }}");
+        .bindPopup("<strong>{{ vehicle.code }}</strong><br>{{ vehicle.type }} · {{ vehicle.battery_level }}%<br><a href=\"{{ url_for('vehicle_details', vehicle_id=vehicle.id) }}\">Zobacz szczegóły</a>");
     {% endfor %}
 });
 </script>

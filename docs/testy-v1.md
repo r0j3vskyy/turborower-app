@@ -39,6 +39,11 @@
 | T24 | Dostęp do panelu `/activity` | Zwykły użytkownik ma widoczny przycisk do panelu aktywności. | Link „Mój pojazd” prowadzi do `/activity`. | działa |
 | T25 | Wiele rezerwacji | Dwie rezerwacje pozostają widoczne po starcie jednego przejazdu. | Panel pokazuje aktywny przejazd i drugą rezerwację. | działa |
 | T26 | Logo TurboRower | Plik `assets/logo/rower2.png` jest dostępny przez aplikację. | HTTP `/assets/logo/rower2.png` zwraca obraz. | działa |
+| T27 | Pin pojazdu przechodzi do szczegółów | Popup dostępnego pojazdu zawiera link do strony szczegółów. | Popup zawiera URL `/vehicles/<id>`. | działa |
+| T28 | Mapa pokazuje tylko dostępne pojazdy | Na mapie nie pojawiają się pojazdy niedostępne. | Piny są renderowane wyłącznie dla pojazdów ze statusem `AVAILABLE`. | działa |
+| T29 | Aktywny przejazd nie ma anulowania | Widok aktywnego przejazdu zawiera tylko zakończenie przejazdu. | Formularz anulowania został usunięty z widoków `vehicle` i `activity`. | działa |
+| T30 | Cennik jest widoczny | Strona `/pricing` pokazuje opłatę startową i stawkę minutową. | Cennik zawiera 3 zł start + 0,50 zł/min. | działa |
+| T31 | Logo bez napisu | Nagłówek zawiera tylko obraz rower2.png. | Napis tekstowy obok logo został usunięty. | działa |
 
 ## Kontrole zakresu
 

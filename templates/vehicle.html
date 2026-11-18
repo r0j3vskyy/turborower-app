@@ -18,9 +18,6 @@
             <form method="post" action="{{ url_for('end_ride', ride_id=ride.id) }}">
                 <button type="submit">Zakończ przejazd</button>
             </form>
-            <form method="post" action="{{ url_for('cancel_ride', ride_id=ride.id) }}">
-                <button class="danger" type="submit">Anuluj przejazd</button>
-            </form>
         </div>
         {% elif reservation and reservation.status == "ACTIVE" %}
         <p class="status-text">Rezerwacja ważna do {{ reservation.expires_at }}.</p>
