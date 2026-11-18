@@ -77,6 +77,9 @@ osobę odpowiedzialną, a gotową zmianę druga osoba sprawdza przed scaleniem.
 - [Technologie](docs/technologie.md)
 - [Prompty v1](docs/prompty-v1.md)
 - [Testy v1](docs/testy-v1.md)
+- [Architektura MVC](docs/architektura-mvc.md)
+- [Prompty MVC v1.0](docs/prompty-mvc-v1.0.md)
+- [Testy v1.0](docs/testy-v1.0.md)
 
 ## Uruchomienie aplikacji v1
 

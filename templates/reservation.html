@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Rezerwacja — TurboRower{% endblock %}
+{% block content %}
+<p class="eyebrow">W03</p><h1>Aktywna rezerwacja i przejazd</h1>
+{% if reservation %}
+<section class="card detail"><h2>{{ reservation["type"] }} {{ reservation["code"] }}</h2><p>Bateria: {{ reservation["battery_level"] }}% · Status: {{ reservation["vehicle_status"] }}</p><p>Zarezerwowano: {{ reservation["reserved_at"]|date_pl }}</p>
+{% elif active_ride %}
+<section class="card detail"><h2>{{ active_ride["type"] }} {{ active_ride["code"] }}</h2><p>Bateria: {{ active_ride["battery_level"] }}% · Status: {{ active_ride["vehicle_status"] }}</p><p>Start: {{ active_ride["started_at"]|date_pl }}</p>
+{% else %}<div class="empty">Nie masz aktywnej rezerwacji. <a href="{{ url_for('vehicles') }}">Wybierz pojazd</a>.</div>{% endif %}
+{% if reservation %}<div class="actions"><form method="post" action="{{ url_for('start_ride') }}"><button class="primary">Rozpocznij przejazd</button></form><form method="post" action="{{ url_for('cancel_reservation') }}"><button class="danger">Anuluj rezerwację</button></form></div></section>{% endif %}
+{% if active_ride %}<section class="card"><h2>Aktywny przejazd</h2><p>Po zakończeniu opłata zostanie obliczona według taryfy v1.</p><form method="post" action="{{ url_for('finish_ride') }}"><button class="primary">Zakończ przejazd</button></form></section>{% endif %}
+{% endblock %}
