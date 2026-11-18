@@ -108,3 +108,11 @@ Otwórz następnie `http://127.0.0.1:5000`. Zatrzymanie serwera: `Ctrl+C`.
 
 Można również utworzyć własne konto przez formularz rejestracji. Baza SQLite
 jest zapisywana lokalnie w `instance/turborower.db` i nie jest dodawana do Git.
+
+## Testy automatyczne
+
+Uruchom zestaw testów isolowanych od produkcyjnej bazy:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
+```

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from werkzeug.security import generate_password_hash
 
-from database.db import DATABASE_PATH, INSTANCE_DIR
+from database.db import DATABASE_PATH, INSTANCE_DIR, get_connection
 
 
 SCHEMA = """
@@ -93,8 +93,8 @@ def _columns(connection: sqlite3.Connection, table: str) -> set[str]:
 
 
 def initialize_database() -> None:
-    INSTANCE_DIR.mkdir(exist_ok=True)
-    with sqlite3.connect(DATABASE_PATH) as connection:
+    DATABASE_PATH.parent.mkdir(exist_ok=True)
+    with get_connection() as connection:
         connection.execute("PRAGMA foreign_keys = ON")
         connection.executescript(SCHEMA)
 
