@@ -26,6 +26,13 @@ from controllers.rides import (
     history as ride_history,
     start_ride as ride_start,
 )
+from controllers.admin import (
+    cancel_admin_reservation,
+    cancel_admin_ride,
+    change_vehicle_status,
+    dashboard as admin_dashboard_view,
+    resolve_admin_fault,
+)
 from models.vehicles import expire_reservations as expire_vehicle_reservations
 
 
@@ -163,155 +170,31 @@ def report_vehicle_fault(vehicle_id: int) -> Any:
 @app.get("/admin")
 @admin_required
 def admin_dashboard() -> Any:
-    vehicles = query_all("SELECT * FROM vehicles ORDER BY code")
-    users = query_all("SELECT id, name, email, role, created_at FROM users ORDER BY id")
-    active_reservations = query_all(
-        """
-        SELECT r.id, r.reserved_at, r.expires_at, r.status,
-               u.name AS user_name, v.code AS vehicle_code
-        FROM reservations r
-        JOIN users u ON u.id = r.user_id
-        JOIN vehicles v ON v.id = r.vehicle_id
-        WHERE r.status IN ('ACTIVE', 'STARTED')
-        ORDER BY r.reserved_at DESC
-        """
-    )
-    active_rides = query_all(
-        """
-        SELECT r.id, r.started_at, u.name AS user_name, v.code AS vehicle_code
-        FROM rides r
-        JOIN users u ON u.id = r.user_id
-        JOIN vehicles v ON v.id = r.vehicle_id
-        WHERE r.status = 'ACTIVE'
-        ORDER BY r.started_at DESC
-        """
-    )
-    fault_reports = query_all(
-        """
-        SELECT f.id, f.category, f.description, f.status, f.created_at,
-               u.name AS user_name, v.code AS vehicle_code
-        FROM fault_reports f
-        JOIN users u ON u.id = f.user_id
-        JOIN vehicles v ON v.id = f.vehicle_id
-        WHERE f.status != 'RESOLVED'
-        ORDER BY f.created_at DESC
-        """
-    )
-    stats = {
-        "vehicles": len(vehicles),
-        "users": len(users),
-        "reservations": len(active_reservations),
-        "rides": len(active_rides),
-    }
-    return render_template(
-        "admin.html",
-        vehicles=vehicles,
-        users=users,
-        active_reservations=active_reservations,
-        active_rides=active_rides,
-        fault_reports=fault_reports,
-        stats=stats,
-    )
+    return admin_dashboard_view()
 
 
 @app.post("/admin/vehicles/<int:vehicle_id>/status")
 @admin_required
 def admin_update_vehicle_status(vehicle_id: int) -> Any:
-    status = request.form.get("status", "")
-    allowed_statuses = ("AVAILABLE", "RESERVED", "IN_USE", "CHARGING", "DAMAGED", "UNAVAILABLE")
-    if status not in allowed_statuses:
-        flash("Nieprawidłowy status pojazdu.", "error")
-        return redirect(url_for("admin_dashboard"))
-    with get_connection() as connection:
-        cursor = connection.execute(
-            "UPDATE vehicles SET status = ? WHERE id = ?",
-            (status, vehicle_id),
-        )
-    if cursor.rowcount == 0:
-        flash("Nie znaleziono pojazdu.", "error")
-    else:
-        flash("Status pojazdu został zaktualizowany.", "success")
-    return redirect(url_for("admin_dashboard"))
+    return change_vehicle_status(vehicle_id)
 
 
 @app.post("/admin/rides/<int:ride_id>/cancel")
 @admin_required
 def admin_cancel_ride(ride_id: int) -> Any:
-    with get_connection() as connection:
-        ride = connection.execute(
-            "SELECT * FROM rides WHERE id = ? AND status = 'ACTIVE'",
-            (ride_id,),
-        ).fetchone()
-        if ride is None:
-            flash("Nie znaleziono aktywnego przejazdu.", "error")
-            return redirect(url_for("admin_dashboard"))
-        connection.execute(
-            "UPDATE rides SET status = 'CANCELLED', ended_at = NULL, duration_minutes = NULL, cost = NULL WHERE id = ?",
-            (ride_id,),
-        )
-        connection.execute(
-            "UPDATE reservations SET status = 'CANCELLED' WHERE user_id = ? AND vehicle_id = ? AND status = 'STARTED'",
-            (ride["user_id"], ride["vehicle_id"]),
-        )
-        connection.execute(
-            "UPDATE vehicles SET status = 'AVAILABLE' WHERE id = ?",
-            (ride["vehicle_id"],),
-        )
-    flash("Przejazd został anulowany przez administratora.", "success")
-    return redirect(url_for("admin_dashboard"))
+    return cancel_admin_ride(ride_id)
 
 
 @app.post("/admin/reservations/<int:reservation_id>/cancel")
 @admin_required
 def admin_cancel_reservation(reservation_id: int) -> Any:
-    with get_connection() as connection:
-        reservation = connection.execute(
-            """
-            SELECT id, vehicle_id
-            FROM reservations
-            WHERE id = ? AND status IN ('ACTIVE', 'STARTED')
-            """,
-            (reservation_id,),
-        ).fetchone()
-        if reservation is None:
-            flash("Nie znaleziono aktywnej rezerwacji.", "error")
-            return redirect(url_for("admin_dashboard"))
-        connection.execute(
-            "UPDATE reservations SET status = 'CANCELLED' WHERE id = ?",
-            (reservation_id,),
-        )
-        connection.execute(
-            """
-            UPDATE vehicles SET status = 'AVAILABLE'
-            WHERE id = ? AND status = 'RESERVED'
-            """,
-            (reservation["vehicle_id"],),
-        )
-    flash("Rezerwacja została anulowana przez administratora.", "success")
-    return redirect(url_for("admin_dashboard"))
+    return cancel_admin_reservation(reservation_id)
 
 
 @app.post("/admin/faults/<int:report_id>/resolve")
 @admin_required
 def admin_resolve_fault(report_id: int) -> Any:
-    with get_connection() as connection:
-        report = connection.execute(
-            "SELECT vehicle_id FROM fault_reports WHERE id = ?",
-            (report_id,),
-        ).fetchone()
-        if report is None:
-            flash("Nie znaleziono zgłoszenia usterki.", "error")
-            return redirect(url_for("admin_dashboard"))
-        connection.execute(
-            "UPDATE fault_reports SET status = 'RESOLVED' WHERE id = ?",
-            (report_id,),
-        )
-        connection.execute(
-            "UPDATE vehicles SET status = 'AVAILABLE' WHERE id = ?",
-            (report["vehicle_id"],),
-        )
-    flash("Zgłoszenie usterki zostało rozwiązane.", "success")
-    return redirect(url_for("admin_dashboard"))
+    return resolve_admin_fault(report_id)
 
 
 @app.get("/history")

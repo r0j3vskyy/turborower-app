@@ -28,6 +28,11 @@
 | T14 | MVC: start jednego przejazdu | Druga rezerwacja nie znika po rozpoczęciu przejazdu | działa |
 | T15 | MVC: zakończenie przejazdu | Zapisują się status, czas, koszt i dystans | działa |
 | T16 | MVC: historia i usterka | Historia działa, a usterka zmienia pojazd na `DAMAGED` | działa |
+| T17 | MVC: panel administratora | Kontroler i model admina zwracają dane panelu | działa |
+| T18 | MVC: zmiana statusu pojazdu | Administrator zmienia status przez model | działa |
+| T19 | MVC: anulowanie rezerwacji admina | Rezerwacja zostaje anulowana, pojazd wraca do `AVAILABLE` | działa |
+| T20 | MVC: rozwiązanie usterki | Zgłoszenie zostaje rozwiązane, pojazd wraca do `AVAILABLE` | działa |
+| T21 | MVC: martwe szablony | Usunięte stare rejestracja/rezerwacja i drugi CSS nie są wymagane | działa |
 
 ## Kontrola architektury
 

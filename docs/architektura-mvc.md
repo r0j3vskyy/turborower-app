@@ -58,6 +58,17 @@ Logowanie, rejestracja i wylogowanie są obsługiwane przez
 tworzy konta i sprawdza hasła. `app.py` rejestruje trasy i obsługuje sesję
 oraz dekoratory `login_required` i `admin_required`.
 
+## Stan po Etapach 7-8
+
+Panel administratora jest teraz obsługiwany przez `controllers/admin.py` i
+`models/admin.py`. Kontroler odbiera żądanie i wykonuje operację przez model,
+a dekorator `admin_required` chroni trasy przed użytkownikami bez roli
+`ADMIN`.
+
+Usunięto stare szablony rejestracji i rezerwacji, które nie były używane przez
+bieżący przepływ, oraz drugą wersję CSS. Aktywne zasoby to
+`static/css/style.css` i `static/js/app.js`.
+
 ## Stan po Etapach 5-6
 
 Pojazdy i rezerwacje są obsługiwane przez `controllers/vehicles.py` i
