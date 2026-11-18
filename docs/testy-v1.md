@@ -21,6 +21,10 @@
 | T06 | Zakończenie przejazdu | Przejazd otrzymuje czas, koszt i status `COMPLETED`. | Przejazd otrzymał czas, dodatni koszt i status `COMPLETED`. | działa |
 | T07 | Historia przejazdów | Użytkownik widzi własny zakończony przejazd. | Historia pokazała przejazd R-001. | działa |
 | T08 | Zatrzymanie i ponowny start aplikacji | Zapisane dane pozostają w SQLite. | Dane są przechowywane w `instance/turborower.db`; inicjalizacja używa `CREATE TABLE IF NOT EXISTS`. | działa |
+| T09 | Logowanie kontem administratora | Administrator może otworzyć `/admin`. | Konto `admin@turborower.local` ma rolę `ADMIN` i widzi panel. | działa |
+| T10 | Próba otwarcia `/admin` zwykłym użytkownikiem | Użytkownik otrzymuje brak uprawnień i trafia do pojazdów. | Zwykły użytkownik jest przekierowany i nie widzi panelu. | działa |
+| T11 | Anulowanie aktywnego przejazdu | Status przejazdu zmienia się na `CANCELLED`, a pojazd na `AVAILABLE`. | Przejazd ma status `CANCELLED`, pojazd wraca do listy dostępnych. | działa |
+| T12 | Zmiana statusu pojazdu przez administratora | Panel administratora zmienia status pojazdu. | Status R-001 został zmieniony na `AVAILABLE` przez panel. | działa |
 
 ## Kontrole zakresu
 
