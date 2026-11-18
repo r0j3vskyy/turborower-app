@@ -7,6 +7,9 @@
         <h1>Znajdź swój pojazd</h1>
         <p class="muted">Wybierz dostępny rower lub hulajnogę i zarezerwuj ją na 15 minut.</p>
     </div>
+    {% if current_user.role == "ADMIN" %}
+    <a class="button" href="{{ url_for('admin_dashboard') }}">Otwórz panel administratora</a>
+    {% endif %}
 </section>
 <section class="map-panel">
     <div id="vehicle-map" aria-label="Mapa pojazdów w Olsztynie"></div>

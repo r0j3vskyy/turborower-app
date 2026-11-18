@@ -4,9 +4,10 @@ import math
 import sqlite3
 from datetime import datetime, timedelta
 from functools import wraps
+from pathlib import Path
 from typing import Any, Callable
 
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, request, send_from_directory, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from database.db import get_connection, query_all, query_one
@@ -19,6 +20,12 @@ app.config["RATE_PER_MINUTE"] = 0.50
 app.config["START_FEE"] = 3.00
 
 initialize_database()
+ROOT_DIR = Path(__file__).resolve().parent
+
+
+@app.get("/assets/logo/<path:filename>")
+def project_asset(filename: str) -> Any:
+    return send_from_directory(ROOT_DIR, f"assets/logo/{filename}")
 
 
 def login_required(view: Callable[..., Any]) -> Callable[..., Any]:
@@ -583,31 +590,29 @@ def history() -> Any:
 @login_required
 def activity() -> Any:
     expire_reservations()
-    reservation = query_one(
+    reservations = query_all(
         """
         SELECT r.*, v.code, v.type, v.latitude, v.longitude, v.status AS vehicle_status
         FROM reservations r
         JOIN vehicles v ON v.id = r.vehicle_id
         WHERE r.user_id = ? AND r.status = 'ACTIVE'
         ORDER BY r.reserved_at DESC
-        LIMIT 1
         """,
         (session["user_id"],),
     )
-    ride_row = query_one(
+    ride_rows = query_all(
         """
         SELECT r.*, v.code, v.type, v.latitude, v.longitude
         FROM rides r
         JOIN vehicles v ON v.id = r.vehicle_id
         WHERE r.user_id = ? AND r.status = 'ACTIVE'
         ORDER BY r.started_at DESC
-        LIMIT 1
         """,
         (session["user_id"],),
     )
 
-    ride = None
-    if ride_row:
+    rides = []
+    for ride_row in ride_rows:
         started_at = datetime.fromisoformat(ride_row["started_at"])
         elapsed_minutes = max(0, math.floor((datetime.now() - started_at).total_seconds() / 60))
         elapsed_seconds = max(0, int((datetime.now() - started_at).total_seconds()))
@@ -620,8 +625,9 @@ def activity() -> Any:
             "estimated_cost": estimated_cost,
             "distance_km": distance_km,
         })
+        rides.append(ride)
 
-    return render_template("activity.html", reservation=reservation, ride=ride)
+    return render_template("activity.html", reservations=reservations, rides=rides)
 
 
 if __name__ == "__main__":

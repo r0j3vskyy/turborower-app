@@ -8,6 +8,7 @@
         <p class="muted">Kontroluj pojazdy, użytkowników, rezerwacje i aktywne przejazdy.</p>
     </div>
 </section>
+<a class="button" href="{{ url_for('activity') if current_user.role == 'USER' else url_for('admin_dashboard') }}">Odśwież panel</a>
 
 <section class="stats-grid">
     <article class="card stat-card"><strong>{{ stats.vehicles }}</strong><span>Pojazdy</span></article>

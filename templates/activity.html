@@ -9,12 +9,13 @@
     </div>
 </section>
 
-{% if ride %}
+{% if rides %}
+{% for ride in rides %}
 <section class="card active-ride-panel">
     <p class="eyebrow">Aktywny przejazd</p>
     <h2>{{ ride.type }} {{ ride.code }}</h2>
     <div class="live-stats">
-        <div><strong id="ride-duration" data-seconds="{{ ride.elapsed_seconds }}">{{ ride.elapsed_minutes }} min</strong><span>Czas</span></div>
+        <div><strong data-ride-seconds="{{ ride.elapsed_seconds }}">{{ ride.elapsed_minutes }} min</strong><span>Czas</span></div>
         <div><strong>{{ "%.2f"|format(ride.estimated_cost) }} zł</strong><span>Szacowany koszt</span></div>
         <div><strong>{{ "%.2f"|format(ride.distance_km) }} km</strong><span>Szacowany dystans</span></div>
     </div>
@@ -29,11 +30,15 @@
         </form>
     </div>
 </section>
-{% elif reservation %}
+{% endfor %}
+{% endif %}
+
+{% if reservations %}
+{% for reservation in reservations %}
 <section class="card active-ride-panel">
     <p class="eyebrow">Zarezerwowany pojazd</p>
     <h2>{{ reservation.type }} {{ reservation.code }}</h2>
-    <p class="status-text" id="reservation-expiry" data-expiry="{{ reservation.expires_at }}">
+    <p class="status-text" data-reservation-expiry="{{ reservation.expires_at }}">
         Rezerwacja ważna do {{ reservation.expires_at }}.
     </p>
     <div id="activity-map" class="activity-map"
@@ -42,7 +47,10 @@
         <a class="button" href="{{ url_for('vehicle_details', vehicle_id=reservation.vehicle_id) }}">Szczegóły pojazdu</a>
     </div>
 </section>
-{% else %}
+{% endfor %}
+{% endif %}
+
+{% if not rides and not reservations %}
 <section class="card empty-state">
     <h2>Brak aktywnej rezerwacji lub przejazdu</h2>
     <p>Wróć do mapy i zarezerwuj dostępny pojazd.</p>

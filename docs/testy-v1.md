@@ -35,6 +35,10 @@
 | T20 | Szczegóły pojazdu z mapą | Widok szczegółów zawiera przybliżoną lokalizację pojazdu na mapie. | Mapa Leaflet jest inicjalizowana ze współrzędnymi pojazdu. | działa |
 | T21 | Ręczne anulowanie rezerwacji przez admina | Administrator usuwa aktywną rezerwację i zwalnia pojazd. | Rezerwacja zmienia status na `CANCELLED`, pojazd wraca do `AVAILABLE`. | działa |
 | T22 | Automatyczne wygasanie rezerwacji po 15 minutach | Przeterminowana rezerwacja jest anulowana przy kolejnym żądaniu, pojazd wraca do dostępnych. | Przeterminowana rezerwacja została anulowana i pojazd miał status `AVAILABLE`. | działa |
+| T23 | Mapa w szczegółach pojazdu | Widok zawiera mapę Leaflet z lokalizacją konkretnego pojazdu. | Kontener mapy i współrzędne pojazdu są obecne, a skrypt jest inicjalizowany poza pętlami formularzy. | działa |
+| T24 | Dostęp do panelu `/activity` | Zwykły użytkownik ma widoczny przycisk do panelu aktywności. | Link „Mój pojazd” prowadzi do `/activity`. | działa |
+| T25 | Wiele rezerwacji | Dwie rezerwacje pozostają widoczne po starcie jednego przejazdu. | Panel pokazuje aktywny przejazd i drugą rezerwację. | działa |
+| T26 | Logo TurboRower | Plik `assets/logo/rower2.png` jest dostępny przez aplikację. | HTTP `/assets/logo/rower2.png` zwraca obraz. | działa |
 
 ## Kontrole zakresu
 
