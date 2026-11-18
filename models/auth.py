@@ -20,8 +20,8 @@ def create_user(name: str, email: str, password: str) -> int:
     with get_connection() as connection:
         cursor = connection.execute(
             """
-            INSERT INTO users (name, email, password_hash)
-            VALUES (?, ?, ?)
+            INSERT INTO users (name, email, password_hash, role)
+            VALUES (?, ?, ?, 'USER')
             """,
             (name, email, generate_password_hash(password)),
         )

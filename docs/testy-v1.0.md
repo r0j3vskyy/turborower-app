@@ -21,6 +21,9 @@
 | T07 | Start i koniec przejazdu | `COMPLETED`, czas i dodatni koszt | działa |
 | T08 | Historia | Tylko własny zakończony przejazd | działa |
 | T09 | Restart aplikacji | Dane pozostają w SQLite | działa |
+| T10 | MVC: rejestracja konta | Kontroler wywołuje model i zapisuje rolę `USER` | działa |
+| T11 | MVC: duplikat e-mail | Model zwraca konflikt, kontroler pokazuje komunikat | działa |
+| T12 | MVC: role sesji | Administrator trafia do `/admin`, użytkownik jest blokowany | działa |
 
 ## Kontrola architektury
 

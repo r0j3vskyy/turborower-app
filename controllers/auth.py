@@ -18,7 +18,10 @@ def login() -> Any:
             return render_template("login.html", mode="login", email=email)
         session.clear()
         session["user_id"] = user["id"]
+        session["role"] = user["role"]
         flash("Zalogowano pomyślnie.", "success")
+        if user["role"] == "ADMIN":
+            return redirect(url_for("admin_dashboard"))
         return redirect(url_for("vehicles"))
     return render_template("login.html", mode="login", email="")
 
@@ -37,6 +40,7 @@ def register() -> Any:
         return render_template("login.html", mode="register", name=name, email=email)
     session.clear()
     session["user_id"] = user_id
+    session["role"] = "USER"
     flash("Konto zostało utworzone.", "success")
     return redirect(url_for("vehicles"))
 

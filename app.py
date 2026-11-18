@@ -8,10 +8,11 @@ from pathlib import Path
 from typing import Any, Callable
 
 from flask import Flask, flash, redirect, render_template, request, send_from_directory, session, url_for
-from werkzeug.security import check_password_hash, generate_password_hash
-
 from database.db import get_connection, query_all, query_one
 from database.init_db import initialize_database
+from controllers.auth import login as auth_login
+from controllers.auth import logout as auth_logout
+from controllers.auth import register as auth_register
 
 
 app = Flask(__name__)
@@ -122,55 +123,17 @@ def index() -> Any:
 
 @app.route("/login", methods=("GET", "POST"))
 def login() -> Any:
-    if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
-        user = query_one("SELECT * FROM users WHERE email = ?", (email,))
-        if user is None or not check_password_hash(user["password_hash"], password):
-            flash("Nieprawidłowy e-mail lub hasło.", "error")
-            return render_template("login.html", mode="login", email=email)
-        session.clear()
-        session["user_id"] = user["id"]
-        session["role"] = user["role"]
-        flash("Zalogowano pomyślnie.", "success")
-        return redirect(url_for("vehicles"))
-    return render_template("login.html", mode="login", email="")
+    return auth_login()
 
 
 @app.route("/register", methods=("GET", "POST"))
 def register() -> Any:
-    if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
-        if not name or not email or len(password) < 8:
-            flash("Podaj nazwę, poprawny e-mail i hasło mające co najmniej 8 znaków.", "error")
-            return render_template("login.html", mode="register", name=name, email=email)
-        try:
-            with get_connection() as connection:
-                cursor = connection.execute(
-                    """
-                    INSERT INTO users (name, email, password_hash)
-                    VALUES (?, ?, ?)
-                    """,
-                    (name, email, generate_password_hash(password)),
-                )
-                session.clear()
-                session["user_id"] = cursor.lastrowid
-                session["role"] = "USER"
-        except sqlite3.IntegrityError:
-            flash("Konto z podanym adresem e-mail już istnieje.", "error")
-            return render_template("login.html", mode="register", name=name, email=email)
-        flash("Konto zostało utworzone.", "success")
-        return redirect(url_for("vehicles"))
-    return render_template("login.html", mode="register", name="", email="")
+    return auth_register()
 
 
 @app.post("/logout")
 def logout() -> Any:
-    session.clear()
-    flash("Wylogowano.", "success")
-    return redirect(url_for("login"))
+    return auth_logout()
 
 
 @app.get("/vehicles")

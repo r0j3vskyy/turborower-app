@@ -47,6 +47,17 @@ Adresy URL i zachowanie aplikacji nie będą zmieniane podczas wydzielania
 warstw. Dodatkowe funkcje, takie jak `/activity`, `/pricing`, panel
 administratora i zgłoszenia usterki, będą podłączane do tej samej mapy MVC.
 
+## Stan po Etapach 3-4
+
+Warstwa bazowa została uproszczona. `database/db.py` udostępnia pojedyncze
+połączenie i podstawowe odczyty, a `database/init_db.py` tworzy tabele,
+rozszerza istniejące kolumny i inicjalizuje konta oraz pojazdy demonstracyjne.
+
+Logowanie, rejestracja i wylogowanie są obsługiwane przez
+`controllers/auth.py`, natomiast `models/auth.py` wyszukuje użytkowników,
+tworzy konta i sprawdza hasła. `app.py` rejestruje trasy i obsługuje sesję
+oraz dekoratory `login_required` i `admin_required`.
+
 ## Funkcje MVP i kryteria
 
 | Funkcja | Model | Widok | Kryterium poprawności |
