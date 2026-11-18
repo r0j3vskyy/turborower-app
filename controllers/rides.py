@@ -7,7 +7,7 @@ from typing import Any
 from flask import flash, redirect, render_template, session, url_for
 
 from database.db import query_one
-from models.rides import completed_for_user, finish, start
+from models.rides import cancel_active_ride, completed_for_user, finish, start
 
 
 def start_ride(reservation_id: int) -> Any:
@@ -22,7 +22,7 @@ def start_ride(reservation_id: int) -> Any:
         flash("Nie znaleziono aktywnej rezerwacji.", "error")
         return redirect(url_for("vehicles"))
     flash("Przejazd rozpoczęty.", "success")
-    return redirect(url_for("vehicle_details", vehicle_id=reservation["vehicle_id"]))
+    return redirect(url_for("activity"))
 
 
 def end_ride(ride_id: int) -> Any:
@@ -38,12 +38,14 @@ def end_ride(ride_id: int) -> Any:
         return redirect(url_for("vehicles"))
     duration = max(1, math.ceil((now - datetime.fromisoformat(ride["started_at"])).total_seconds() / 60))
     cost = 3.00 + duration * 0.50
+    distance_km = round(max(0.5, duration * 0.18 + (ride["vehicle_id"] % 5) * 0.2), 2)
     if not finish(
         session["user_id"],
         ride_id,
         now.isoformat(timespec="seconds"),
         duration,
         cost,
+        distance_km,
     ):
         flash("Nie znaleziono aktywnego przejazdu.", "error")
         return redirect(url_for("vehicles"))
@@ -58,3 +60,11 @@ def history() -> Any:
         rides=rides,
         total=sum((ride["cost"] or 0) for ride in rides),
     )
+
+
+def cancel_ride(ride_id: int) -> Any:
+    if not cancel_active_ride(session["user_id"], ride_id):
+        flash("Nie znaleziono aktywnego przejazdu.", "error")
+        return redirect(url_for("vehicles"))
+    flash("Przejazd został anulowany. Pojazd ponownie jest dostępny.", "success")
+    return redirect(url_for("vehicles"))

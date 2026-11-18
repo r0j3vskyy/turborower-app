@@ -58,6 +58,17 @@ Logowanie, rejestracja i wylogowanie są obsługiwane przez
 tworzy konta i sprawdza hasła. `app.py` rejestruje trasy i obsługuje sesję
 oraz dekoratory `login_required` i `admin_required`.
 
+## Stan po Etapach 5-6
+
+Pojazdy i rezerwacje są obsługiwane przez `controllers/vehicles.py` i
+`models/vehicles.py`. Kontroler wywołuje model dla listy, szczegółów,
+rezerwacji, anulowania i zgłoszeń usterki.
+
+Start, zakończenie i historia przejazdu są obsługiwane przez
+`controllers/rides.py` i `models/rides.py`. Model zapisuje koszt, czas
+trwania i dystans, a historia pobiera wyłącznie przejazdy zalogowanego
+użytkownika.
+
 ## Funkcje MVP i kryteria
 
 | Funkcja | Model | Widok | Kryterium poprawności |

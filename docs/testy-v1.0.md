@@ -24,6 +24,10 @@
 | T10 | MVC: rejestracja konta | Kontroler wywołuje model i zapisuje rolę `USER` | działa |
 | T11 | MVC: duplikat e-mail | Model zwraca konflikt, kontroler pokazuje komunikat | działa |
 | T12 | MVC: role sesji | Administrator trafia do `/admin`, użytkownik jest blokowany | działa |
+| T13 | MVC: dwa pojazdy i rezerwacje | Dwie rezerwacje pozostają aktywne jednocześnie | działa |
+| T14 | MVC: start jednego przejazdu | Druga rezerwacja nie znika po rozpoczęciu przejazdu | działa |
+| T15 | MVC: zakończenie przejazdu | Zapisują się status, czas, koszt i dystans | działa |
+| T16 | MVC: historia i usterka | Historia działa, a usterka zmienia pojazd na `DAMAGED` | działa |
 
 ## Kontrola architektury
 
