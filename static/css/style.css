@@ -66,6 +66,16 @@ table { border-collapse: collapse; width: 100%; }th, td { border-bottom: 1px sol
 .status-text { background: #eef7f7; border-radius: .6rem; color: var(--navy); padding: .8rem; }
 .total-card { background: var(--navy); border-radius: .8rem; color: white; padding: 1rem 1.25rem; }.total-card span, .total-card strong { display: block; }.total-card span { font-size: .8rem; opacity: .8; }.total-card strong { font-size: 1.4rem; margin-top: .2rem; }
 .history-row { grid-template-columns: 1fr auto; }.history-row strong { color: var(--teal); font-size: 1.15rem; }
+.ride-summary { align-items: end; display: grid; gap: .5rem; justify-items: end; }
+.route-map { border: 1px solid var(--border); border-radius: .6rem; height: 120px; width: 220px; }
+.vehicle-location-map { border: 1px solid var(--border); border-radius: .8rem; height: 260px; margin: 1.25rem 0; width: 100%; }
+.fault-link { display: inline-block; margin-top: 1rem; }
+.active-ride-panel { padding: 2rem; }
+.live-stats { display: grid; gap: 1rem; grid-template-columns: repeat(3, 1fr); margin: 1.25rem 0; }
+.live-stats div { background: #eef7f7; border-radius: .8rem; padding: 1rem; }
+.live-stats strong, .live-stats span { display: block; }.live-stats strong { color: var(--navy); }.live-stats span { color: var(--muted); margin-top: .25rem; }
+.activity-map { border: 1px solid var(--border); border-radius: .8rem; height: 300px; margin: 1.25rem 0; }
+.report-card select, .report-card textarea { border: 1px solid var(--border); border-radius: .6rem; font: inherit; padding: .8rem; width: 100%; }
 .inline-form { display: inline; }
 @media (max-width: 640px) { .site-header { align-items: flex-start; flex-direction: column; gap: .75rem; } .page-heading { align-items: flex-start; flex-direction: column; gap: 1rem; } .vehicle-card { grid-template-columns: auto 1fr; }.vehicle-card .button { grid-column: 1 / -1; }.container { padding-top: 1.5rem; } }
 

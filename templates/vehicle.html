@@ -10,6 +10,8 @@
             <div><strong>{{ vehicle.battery_level }}%</strong><span>Bateria</span></div>
             <div><strong>{{ vehicle.status }}</strong><span>Status</span></div>
         </div>
+        <div id="vehicle-location-map" class="vehicle-location-map"
+             data-lat="{{ vehicle.latitude }}" data-lng="{{ vehicle.longitude }}"></div>
         {% if ride %}
         <p class="status-text">Aktywny przejazd rozpoczęty {{ ride.started_at }}.</p>
         <div class="actions">
@@ -36,6 +38,9 @@
         </form>
         {% else %}
         <p class="status-text">Ten pojazd nie jest obecnie dostępny.</p>
+        {% endif %}
+        {% if vehicle.status != "DAMAGED" %}
+        <a class="button secondary fault-link" href="{{ url_for('report_vehicle_fault', vehicle_id=vehicle.id) }}">Zgłoś usterkę</a>
         {% endif %}
     </div>
 </section>

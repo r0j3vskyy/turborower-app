@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Zgłoś usterkę - TurboRower{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('vehicle_details', vehicle_id=vehicle.id) }}">← Wróć do pojazdu</a>
+<section class="auth-card report-card">
+    <p class="eyebrow">Zgłoszenie usterki</p>
+    <h1>{{ vehicle.code }}</h1>
+    <p class="muted">Opisz problem z {{ vehicle.type|lower }}. Zgłoszenie trafi do panelu administratora.</p>
+    <form method="post" class="form-stack">
+        <label for="category">Rodzaj usterki</label>
+        <select id="category" name="category" required>
+            <option value="">Wybierz kategorię</option>
+            <option value="HAMULCE">Hamulec</option>
+            <option value="KOLO_OPONA">Koło lub opona</option>
+            <option value="NAPED">Napęd</option>
+            <option value="AKUMULATOR">Akumulator lub ładowanie</option>
+            <option value="INNE">Inne</option>
+        </select>
+        <label for="description">Opis</label>
+        <textarea id="description" name="description" rows="5" placeholder="Np. pojazd trzeszczy lub hamulec nie działa..."></textarea>
+        <button type="submit">Wyślij zgłoszenie</button>
+    </form>
+</section>
+{% endblock %}

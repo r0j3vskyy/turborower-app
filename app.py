@@ -54,6 +54,50 @@ def current_user() -> sqlite3.Row | None:
     return query_one("SELECT * FROM users WHERE id = ?", (user_id,))
 
 
+def expire_reservations() -> int:
+    now = datetime.now()
+    expired_count = 0
+    with get_connection() as connection:
+        expired = connection.execute(
+            """
+            SELECT id, vehicle_id
+            FROM reservations
+            WHERE status = 'ACTIVE' AND expires_at <= ?
+            """,
+            (now.isoformat(timespec="seconds"),),
+        ).fetchall()
+        for reservation in expired:
+            active_ride = connection.execute(
+                """
+                SELECT id FROM rides
+                WHERE user_id = (
+                    SELECT user_id FROM reservations WHERE id = ?
+                ) AND vehicle_id = ? AND status = 'ACTIVE'
+                """,
+                (reservation["id"], reservation["vehicle_id"]),
+            ).fetchone()
+            if active_ride is not None:
+                continue
+            connection.execute(
+                "UPDATE reservations SET status = 'CANCELLED' WHERE id = ?",
+                (reservation["id"],),
+            )
+            connection.execute(
+                """
+                UPDATE vehicles SET status = 'AVAILABLE'
+                WHERE id = ? AND status = 'RESERVED'
+                """,
+                (reservation["vehicle_id"],),
+            )
+            expired_count += 1
+    return expired_count
+
+
+@app.before_request
+def cleanup_expired_reservations() -> None:
+    expire_reservations()
+
+
 @app.context_processor
 def inject_current_user() -> dict[str, sqlite3.Row | None]:
     return {"current_user": current_user()}
@@ -125,14 +169,15 @@ def logout() -> Any:
 @app.get("/vehicles")
 @login_required
 def vehicles() -> Any:
-    rows = query_all(
+    available_rows = query_all(
         """
         SELECT * FROM vehicles
         WHERE status = 'AVAILABLE'
         ORDER BY type, code
         """
     )
-    return render_template("vehicles.html", vehicles=rows)
+    all_rows = query_all("SELECT * FROM vehicles ORDER BY type, code")
+    return render_template("vehicles.html", vehicles=available_rows, all_vehicles=all_rows)
 
 
 @app.get("/vehicles/<int:vehicle_id>")
@@ -192,7 +237,7 @@ def reserve_vehicle(vehicle_id: int) -> Any:
             (vehicle_id,),
         )
     flash("Pojazd został zarezerwowany na 15 minut.", "success")
-    return redirect(url_for("vehicle_details", vehicle_id=vehicle_id))
+    return redirect(url_for("activity"))
 
 
 @app.post("/reservations/<int:reservation_id>/cancel")
@@ -221,7 +266,7 @@ def cancel_reservation(reservation_id: int) -> Any:
             (reservation["vehicle_id"],),
         )
     flash("Rezerwacja została anulowana.", "success")
-    return redirect(url_for("vehicle_details", vehicle_id=reservation["vehicle_id"]))
+    return redirect(url_for("activity"))
 
 
 @app.post("/reservations/<int:reservation_id>/start")
@@ -255,7 +300,7 @@ def start_ride(reservation_id: int) -> Any:
             (reservation["vehicle_id"],),
         )
     flash("Przejazd rozpoczęty.", "success")
-    return redirect(url_for("vehicle_details", vehicle_id=reservation["vehicle_id"]))
+    return redirect(url_for("activity"))
 
 
 @app.post("/rides/<int:ride_id>/end")
@@ -276,13 +321,14 @@ def end_ride(ride_id: int) -> Any:
         started_at = datetime.fromisoformat(ride["started_at"])
         duration_minutes = max(1, math.ceil((now - started_at).total_seconds() / 60))
         cost = app.config["START_FEE"] + duration_minutes * app.config["RATE_PER_MINUTE"]
+        distance_km = round(max(0.5, duration_minutes * 0.18 + (ride["vehicle_id"] % 5) * 0.2), 2)
         connection.execute(
             """
             UPDATE rides
-            SET ended_at = ?, duration_minutes = ?, cost = ?, status = 'COMPLETED'
+            SET ended_at = ?, duration_minutes = ?, cost = ?, distance_km = ?, status = 'COMPLETED'
             WHERE id = ?
             """,
-            (now.isoformat(timespec="seconds"), duration_minutes, cost, ride_id),
+            (now.isoformat(timespec="seconds"), duration_minutes, cost, distance_km, ride_id),
         )
         connection.execute(
             "UPDATE reservations SET status = 'CANCELLED' WHERE user_id = ? AND vehicle_id = ? AND status = 'STARTED'",
@@ -330,6 +376,38 @@ def cancel_ride(ride_id: int) -> Any:
     return redirect(url_for("vehicles"))
 
 
+@app.route("/vehicles/<int:vehicle_id>/fault", methods=("GET", "POST"))
+@login_required
+def report_vehicle_fault(vehicle_id: int) -> Any:
+    vehicle = query_one("SELECT * FROM vehicles WHERE id = ?", (vehicle_id,))
+    if vehicle is None:
+        flash("Nie znaleziono pojazdu.", "error")
+        return redirect(url_for("vehicles"))
+    if request.method == "POST":
+        category = request.form.get("category", "").strip()
+        description = request.form.get("description", "").strip()
+        allowed_categories = ("HAMULCE", "KOLO_OPONA", "NAPED", "AKUMULATOR", "INNE")
+        if category not in allowed_categories:
+            flash("Wybierz kategorię usterki.", "error")
+            return render_template("fault_report.html", vehicle=vehicle)
+        with get_connection() as connection:
+            connection.execute(
+                """
+                INSERT INTO fault_reports
+                    (user_id, vehicle_id, category, description, status)
+                VALUES (?, ?, ?, ?, 'OPEN')
+                """,
+                (session["user_id"], vehicle_id, category, description),
+            )
+            connection.execute(
+                "UPDATE vehicles SET status = 'DAMAGED' WHERE id = ?",
+                (vehicle_id,),
+            )
+        flash("Zgłoszenie usterki zostało przesłane.", "success")
+        return redirect(url_for("vehicle_details", vehicle_id=vehicle_id))
+    return render_template("fault_report.html", vehicle=vehicle)
+
+
 @app.get("/admin")
 @admin_required
 def admin_dashboard() -> Any:
@@ -356,6 +434,17 @@ def admin_dashboard() -> Any:
         ORDER BY r.started_at DESC
         """
     )
+    fault_reports = query_all(
+        """
+        SELECT f.id, f.category, f.description, f.status, f.created_at,
+               u.name AS user_name, v.code AS vehicle_code
+        FROM fault_reports f
+        JOIN users u ON u.id = f.user_id
+        JOIN vehicles v ON v.id = f.vehicle_id
+        WHERE f.status != 'RESOLVED'
+        ORDER BY f.created_at DESC
+        """
+    )
     stats = {
         "vehicles": len(vehicles),
         "users": len(users),
@@ -368,6 +457,7 @@ def admin_dashboard() -> Any:
         users=users,
         active_reservations=active_reservations,
         active_rides=active_rides,
+        fault_reports=fault_reports,
         stats=stats,
     )
 
@@ -376,7 +466,7 @@ def admin_dashboard() -> Any:
 @admin_required
 def admin_update_vehicle_status(vehicle_id: int) -> Any:
     status = request.form.get("status", "")
-    allowed_statuses = ("AVAILABLE", "RESERVED", "IN_USE", "UNAVAILABLE")
+    allowed_statuses = ("AVAILABLE", "RESERVED", "IN_USE", "CHARGING", "DAMAGED", "UNAVAILABLE")
     if status not in allowed_statuses:
         flash("Nieprawidłowy status pojazdu.", "error")
         return redirect(url_for("admin_dashboard"))
@@ -419,12 +509,65 @@ def admin_cancel_ride(ride_id: int) -> Any:
     return redirect(url_for("admin_dashboard"))
 
 
+@app.post("/admin/reservations/<int:reservation_id>/cancel")
+@admin_required
+def admin_cancel_reservation(reservation_id: int) -> Any:
+    with get_connection() as connection:
+        reservation = connection.execute(
+            """
+            SELECT id, vehicle_id
+            FROM reservations
+            WHERE id = ? AND status IN ('ACTIVE', 'STARTED')
+            """,
+            (reservation_id,),
+        ).fetchone()
+        if reservation is None:
+            flash("Nie znaleziono aktywnej rezerwacji.", "error")
+            return redirect(url_for("admin_dashboard"))
+        connection.execute(
+            "UPDATE reservations SET status = 'CANCELLED' WHERE id = ?",
+            (reservation_id,),
+        )
+        connection.execute(
+            """
+            UPDATE vehicles SET status = 'AVAILABLE'
+            WHERE id = ? AND status = 'RESERVED'
+            """,
+            (reservation["vehicle_id"],),
+        )
+    flash("Rezerwacja została anulowana przez administratora.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.post("/admin/faults/<int:report_id>/resolve")
+@admin_required
+def admin_resolve_fault(report_id: int) -> Any:
+    with get_connection() as connection:
+        report = connection.execute(
+            "SELECT vehicle_id FROM fault_reports WHERE id = ?",
+            (report_id,),
+        ).fetchone()
+        if report is None:
+            flash("Nie znaleziono zgłoszenia usterki.", "error")
+            return redirect(url_for("admin_dashboard"))
+        connection.execute(
+            "UPDATE fault_reports SET status = 'RESOLVED' WHERE id = ?",
+            (report_id,),
+        )
+        connection.execute(
+            "UPDATE vehicles SET status = 'AVAILABLE' WHERE id = ?",
+            (report["vehicle_id"],),
+        )
+    flash("Zgłoszenie usterki zostało rozwiązane.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
 @app.get("/history")
 @login_required
 def history() -> Any:
     rides = query_all(
         """
-        SELECT r.*, v.code, v.type
+        SELECT r.*, v.code, v.type, v.latitude, v.longitude
         FROM rides r
         JOIN vehicles v ON v.id = r.vehicle_id
         WHERE r.user_id = ? AND r.status = 'COMPLETED'
@@ -434,6 +577,51 @@ def history() -> Any:
     )
     total = sum((ride["cost"] or 0) for ride in rides)
     return render_template("history.html", rides=rides, total=total)
+
+
+@app.get("/activity")
+@login_required
+def activity() -> Any:
+    expire_reservations()
+    reservation = query_one(
+        """
+        SELECT r.*, v.code, v.type, v.latitude, v.longitude, v.status AS vehicle_status
+        FROM reservations r
+        JOIN vehicles v ON v.id = r.vehicle_id
+        WHERE r.user_id = ? AND r.status = 'ACTIVE'
+        ORDER BY r.reserved_at DESC
+        LIMIT 1
+        """,
+        (session["user_id"],),
+    )
+    ride_row = query_one(
+        """
+        SELECT r.*, v.code, v.type, v.latitude, v.longitude
+        FROM rides r
+        JOIN vehicles v ON v.id = r.vehicle_id
+        WHERE r.user_id = ? AND r.status = 'ACTIVE'
+        ORDER BY r.started_at DESC
+        LIMIT 1
+        """,
+        (session["user_id"],),
+    )
+
+    ride = None
+    if ride_row:
+        started_at = datetime.fromisoformat(ride_row["started_at"])
+        elapsed_minutes = max(0, math.floor((datetime.now() - started_at).total_seconds() / 60))
+        elapsed_seconds = max(0, int((datetime.now() - started_at).total_seconds()))
+        estimated_cost = app.config["START_FEE"] + elapsed_minutes * app.config["RATE_PER_MINUTE"]
+        distance_km = round(max(0.5, elapsed_minutes * 0.18 + (ride_row["vehicle_id"] % 5) * 0.2), 2)
+        ride = dict(ride_row)
+        ride.update({
+            "elapsed_minutes": elapsed_minutes,
+            "elapsed_seconds": elapsed_seconds,
+            "estimated_cost": estimated_cost,
+            "distance_km": distance_km,
+        })
+
+    return render_template("activity.html", reservation=reservation, ride=ride)
 
 
 if __name__ == "__main__":

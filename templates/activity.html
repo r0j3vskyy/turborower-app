@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Mój pojazd - TurboRower{% endblock %}
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Panel aktywności</p>
+        <h1>Mój pojazd</h1>
+        <p class="muted">Śledź zarezerwowany pojazd lub aktywny przejazd.</p>
+    </div>
+</section>
+
+{% if ride %}
+<section class="card active-ride-panel">
+    <p class="eyebrow">Aktywny przejazd</p>
+    <h2>{{ ride.type }} {{ ride.code }}</h2>
+    <div class="live-stats">
+        <div><strong id="ride-duration" data-seconds="{{ ride.elapsed_seconds }}">{{ ride.elapsed_minutes }} min</strong><span>Czas</span></div>
+        <div><strong>{{ "%.2f"|format(ride.estimated_cost) }} zł</strong><span>Szacowany koszt</span></div>
+        <div><strong>{{ "%.2f"|format(ride.distance_km) }} km</strong><span>Szacowany dystans</span></div>
+    </div>
+    <div id="activity-map" class="activity-map"
+         data-lat="{{ ride.latitude }}" data-lng="{{ ride.longitude }}"></div>
+    <div class="actions">
+        <form method="post" action="{{ url_for('end_ride', ride_id=ride.id) }}">
+            <button type="submit">Zakończ przejazd</button>
+        </form>
+        <form method="post" action="{{ url_for('cancel_ride', ride_id=ride.id) }}">
+            <button class="danger" type="submit">Anuluj przejazd</button>
+        </form>
+    </div>
+</section>
+{% elif reservation %}
+<section class="card active-ride-panel">
+    <p class="eyebrow">Zarezerwowany pojazd</p>
+    <h2>{{ reservation.type }} {{ reservation.code }}</h2>
+    <p class="status-text" id="reservation-expiry" data-expiry="{{ reservation.expires_at }}">
+        Rezerwacja ważna do {{ reservation.expires_at }}.
+    </p>
+    <div id="activity-map" class="activity-map"
+         data-lat="{{ reservation.latitude }}" data-lng="{{ reservation.longitude }}"></div>
+    <div class="actions">
+        <a class="button" href="{{ url_for('vehicle_details', vehicle_id=reservation.vehicle_id) }}">Szczegóły pojazdu</a>
+    </div>
+</section>
+{% else %}
+<section class="card empty-state">
+    <h2>Brak aktywnej rezerwacji lub przejazdu</h2>
+    <p>Wróć do mapy i zarezerwuj dostępny pojazd.</p>
+    <a class="button" href="{{ url_for('vehicles') }}">Pokaż pojazdy</a>
+</section>
+{% endif %}
+{% endblock %}

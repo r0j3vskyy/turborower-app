@@ -31,7 +31,7 @@
                 <td>
                     <form class="status-form" method="post" action="{{ url_for('admin_update_vehicle_status', vehicle_id=vehicle.id) }}">
                         <select name="status">
-                            {% for status in ('AVAILABLE', 'RESERVED', 'IN_USE', 'UNAVAILABLE') %}
+                            {% for status in ('AVAILABLE', 'RESERVED', 'IN_USE', 'CHARGING', 'DAMAGED', 'UNAVAILABLE') %}
                             <option value="{{ status }}" {% if vehicle.status == status %}selected{% endif %}>{{ status }}</option>
                             {% endfor %}
                         </select>
@@ -70,11 +70,36 @@
         {% for reservation in active_reservations %}
         <article class="card admin-row">
             <div><strong>{{ reservation.vehicle_code }}</strong><span>{{ reservation.user_name }} · {{ reservation.status }} · do {{ reservation.expires_at }}</span></div>
+            <form method="post" action="{{ url_for('admin_cancel_reservation', reservation_id=reservation.id) }}">
+                <button class="danger" type="submit">Anuluj rezerwację</button>
+            </form>
         </article>
         {% endfor %}
     </div>
     {% else %}
     <p class="empty-state">Brak aktywnych rezerwacji.</p>
+    {% endif %}
+</section>
+
+<section class="admin-section">
+    <h2>Zgłoszone usterki</h2>
+    {% if fault_reports %}
+    <div class="admin-list">
+        {% for report in fault_reports %}
+        <article class="card admin-row">
+            <div>
+                <strong>{{ report.vehicle_code }} · {{ report.category }}</strong>
+                <span>{{ report.user_name }} · {{ report.status }} · {{ report.created_at }}</span>
+                {% if report.description %}<span>{{ report.description }}</span>{% endif %}
+            </div>
+            <form method="post" action="{{ url_for('admin_resolve_fault', report_id=report.id) }}">
+                <button type="submit">Rozwiąż i dostępny</button>
+            </form>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">Brak nowych zgłoszeń usterki.</p>
     {% endif %}
 </section>
 

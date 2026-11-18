@@ -13,6 +13,9 @@
         {% if current_user %}
         <nav>
             <a href="{{ url_for('vehicles') }}">Pojazdy</a>
+            {% if current_user.role == "USER" %}
+            <a href="{{ url_for('activity') }}">Mój pojazd</a>
+            {% endif %}
             <a href="{{ url_for('history') }}">Historia</a>
             {% if current_user.role == "ADMIN" %}
             <a href="{{ url_for('admin_dashboard') }}">Panel administratora</a>

@@ -19,10 +19,10 @@ document.addEventListener("DOMContentLoaded", function () {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap"
     }).addTo(map);
-    {% for vehicle in vehicles %}
+    {% for vehicle in all_vehicles %}
     L.marker([{{ vehicle.latitude }}, {{ vehicle.longitude }}])
         .addTo(map)
-        .bindPopup("<strong>{{ vehicle.code }}</strong><br>{{ vehicle.type }} · {{ vehicle.battery_level }}%");
+        .bindPopup("<strong>{{ vehicle.code }}</strong><br>{{ vehicle.type }} · {{ vehicle.battery_level }}% · {{ vehicle.status }}");
     {% endfor %}
 });
 </script>
