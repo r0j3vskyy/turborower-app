@@ -15,9 +15,12 @@
         <div>
             <p class="eyebrow">{{ ride.type }}</p>
             <h2>{{ ride.code }}</h2>
-            <p class="muted">{{ ride.ended_at }} · {{ ride.duration_minutes }} min</p>
+            <p class="muted">{{ ride.ended_at }} · {{ ride.duration_minutes or 0 }} min · {{ "%.2f"|format(ride.distance_km or 0) }} km</p>
         </div>
-        <strong>{{ "%.2f"|format(ride.cost) }} zł</strong>
+        <div class="ride-summary">
+            <strong>{{ "%.2f"|format(ride.cost) }} zł</strong>
+            <div class="route-map" data-lat="{{ ride.latitude }}" data-lng="{{ ride.longitude }}"></div>
+        </div>
     </article>
     {% else %}
     <p class="empty-state">Nie masz jeszcze zakończonych przejazdów.</p>

@@ -7,11 +7,28 @@
         <h1>Znajdź swój pojazd</h1>
         <p class="muted">Wybierz dostępny rower lub hulajnogę i zarezerwuj ją na 15 minut.</p>
     </div>
+    {% if current_user.role == "ADMIN" %}
+    <a class="button" href="{{ url_for('admin_dashboard') }}">Otwórz panel administratora</a>
+    {% endif %}
 </section>
-<section class="map-placeholder">
-    <span>MAPA POJAZDÓW</span>
-    <span class="map-dot dot-one"></span><span class="map-dot dot-two"></span><span class="map-dot dot-three"></span>
+<section class="map-panel">
+    <div id="vehicle-map" aria-label="Mapa pojazdów w Olsztynie"></div>
 </section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (typeof L === "undefined") return;
+    const map = L.map("vehicle-map").setView([53.7784, 20.4801], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+    {% for vehicle in vehicles %}
+    L.marker([{{ vehicle.latitude }}, {{ vehicle.longitude }}])
+        .addTo(map)
+        .bindPopup("<strong>{{ vehicle.code }}</strong><br>{{ vehicle.type }} · {{ vehicle.battery_level }}%<br><a href=\"{{ url_for('vehicle_details', vehicle_id=vehicle.id) }}\">Zobacz szczegóły</a>");
+    {% endfor %}
+});
+</script>
 <section class="vehicle-grid">
     {% for vehicle in vehicles %}
     <article class="card vehicle-card">

@@ -4,15 +4,25 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}TurboRower{% endblock %}</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <header class="site-header">
-        <a class="brand" href="{{ url_for('vehicles') if current_user else url_for('login') }}">TurboRower</a>
+        <a class="brand" href="{{ url_for('vehicles') if current_user else url_for('login') }}">
+            <img src="/assets/logo/rower2.png" alt="TurboRower">
+        </a>
         {% if current_user %}
         <nav>
             <a href="{{ url_for('vehicles') }}">Pojazdy</a>
+            {% if current_user.role == "USER" %}
+            <a href="{{ url_for('activity') }}">Mój pojazd</a>
+            {% endif %}
             <a href="{{ url_for('history') }}">Historia</a>
+            <a href="{{ url_for('pricing') }}">Cennik</a>
+            {% if current_user.role == "ADMIN" %}
+            <a href="{{ url_for('admin_dashboard') }}">Panel administratora</a>
+            {% endif %}
             <form method="post" action="{{ url_for('logout') }}" class="inline-form">
                 <button class="link-button" type="submit">Wyloguj</button>
             </form>
@@ -31,6 +41,7 @@
         {% endwith %}
         {% block content %}{% endblock %}
     </main>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

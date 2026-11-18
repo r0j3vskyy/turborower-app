@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Cennik i taryfy - TurboRower{% endblock %}
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Cennik TurboRower</p>
+        <h1>Taryfy przejazdów</h1>
+        <p class="muted">Wszystkie koszty są kalkulowane automatycznie po zakończeniu przejazdu.</p>
+    </div>
+</section>
+
+<section class="pricing-grid">
+    <article class="card pricing-card">
+        <p class="eyebrow">Rower miejski</p>
+        <h2>{{ "%.2f"|format(start_fee) }} zł</h2>
+        <p>Opłata startowa</p>
+        <div class="pricing-divider"></div>
+        <strong>{{ "%.2f"|format(rate_per_minute) }} zł / min</strong>
+        <p class="muted">Pobierane za każdą minutę przejazdu.</p>
+    </article>
+
+    <article class="card pricing-card">
+        <p class="eyebrow">Hulajnoga miejska</p>
+        <h2>{{ "%.2f"|format(start_fee) }} zł</h2>
+        <p>Opłata startowa</p>
+        <div class="pricing-divider"></div>
+        <strong>{{ "%.2f"|format(rate_per_minute) }} zł / min</strong>
+        <p class="muted">Pobierane za każdą minutę przejazdu.</p>
+    </article>
+
+    <article class="card pricing-card">
+        <p class="eyebrow">Przykład</p>
+        <h2>{{ "%.2f"|format(start_fee + 10 * rate_per_minute) }} zł</h2>
+        <p>10-minutowy przejazd</p>
+        <div class="pricing-divider"></div>
+        <strong>10 minut</strong>
+        <p class="muted">Opłata startowa + 10 × stawka minutowa.</p>
+    </article>
+</section>
+{% endblock %}

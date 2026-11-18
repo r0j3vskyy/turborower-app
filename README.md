@@ -98,6 +98,13 @@ Otwórz następnie `http://127.0.0.1:5000`. Zatrzymanie serwera: `Ctrl+C`.
 
 - **E-mail:** `demo@turborower.local`
 - **Hasło:** `demo1234`
+- **Rola:** zwykły użytkownik
+
+### Konto administratora
+
+- **E-mail:** `admin@turborower.local`
+- **Hasło:** `admin1234`
+- **Rola:** administrator
 
 Można również utworzyć własne konto przez formularz rejestracji. Baza SQLite
 jest zapisywana lokalnie w `instance/turborower.db` i nie jest dodawana do Git.
