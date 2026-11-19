@@ -96,12 +96,7 @@ def inject_current_user() -> dict[str, sqlite3.Row | None]:
 
 @app.get("/")
 def index() -> Any:
-    if "user_id" in session:
-        user = current_user()
-        if user and user["role"] == "ADMIN":
-            return redirect(url_for("admin_dashboard"))
-        return redirect(url_for("vehicles"))
-    return redirect(url_for("login"))
+    return render_template("home.html")
 
 
 @app.route("/login", methods=("GET", "POST"))

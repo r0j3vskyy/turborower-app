@@ -60,6 +60,13 @@ class TurboRowerTestCase(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
+    def test_home_page_is_public_and_links_to_authentication(self) -> None:
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Wypożycz pojazd elektryczny w Olsztynie".encode(), response.data)
+        self.assertIn(b'href="/login"', response.data)
+        self.assertIn(b'href="/register"', response.data)
+
     def get_vehicle_id(self, code: str) -> int:
         with get_connection() as connection:
             vehicle = connection.execute(

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}TurboRower - Wypożycz pojazd elektryczny w Olsztynie{% endblock %}
+{% block content %}
+<section class="home-hero">
+    <div class="home-hero-content">
+        <p class="eyebrow">Miejska mobilność w Olsztynie</p>
+        <h1>Wypożycz pojazd elektryczny w Olsztynie</h1>
+        <p class="home-intro">
+            Wybierz rower lub hulajnogę, zarezerwuj pojazd i ruszaj w drogę.
+            TurboRower ułatwia szybkie i wygodne poruszanie się po mieście.
+        </p>
+        <div class="home-actions">
+            {% if current_user %}
+            <a class="button home-primary" href="{{ url_for('vehicles') }}">Przejedź się!</a>
+            {% else %}
+            <a class="button home-primary" href="{{ url_for('login') }}">Zaloguj się</a>
+            <a class="button secondary" href="{{ url_for('register') }}">Utwórz konto</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="home-logo-card">
+        <img src="/assets/logo/rower2.png" alt="TurboRower">
+        <p>Twoja trasa. Twój wybór. Twój Olsztyn.</p>
+    </div>
+</section>
+
+<section class="home-steps" aria-labelledby="how-it-works">
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">Prosto i wygodnie</p>
+            <h2 id="how-it-works">Jak to działa?</h2>
+        </div>
+    </div>
+    <div class="home-step-grid">
+        <article class="card home-step">
+            <span class="home-step-number">1</span>
+            <div>
+                <h3>Znajdź pojazd</h3>
+                <p class="muted">Sprawdź dostępne rowery i hulajnogi na liście lub mapie.</p>
+            </div>
+        </article>
+        <article class="card home-step">
+            <span class="home-step-number">2</span>
+            <div>
+                <h3>Zarezerwuj</h3>
+                <p class="muted">Wybierz pojazd i zarezerwuj go dla siebie.</p>
+            </div>
+        </article>
+        <article class="card home-step">
+            <span class="home-step-number">3</span>
+            <div>
+                <h3>Ruszaj w drogę</h3>
+                <p class="muted">Rozpocznij przejazd i śledź jego statystyki w aplikacji.</p>
+            </div>
+        </article>
+    </div>
+</section>
+{% endblock %}

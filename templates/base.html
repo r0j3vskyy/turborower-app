@@ -9,7 +9,7 @@
 </head>
 <body>
     <header class="site-header">
-        <a class="brand" href="{{ url_for('vehicles') if current_user else url_for('login') }}">
+        <a class="brand" href="{{ url_for('index') }}">
             <img src="/assets/logo/logo-dlugie.png" alt="TurboRower">
         </a>
         {% if current_user %}
