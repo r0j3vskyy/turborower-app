@@ -1,6 +1,6 @@
-# Prompty MVC - TurboRower v1.0
+# Prompty MVC - TurboRower v1.0.0
 
-Data opracowania: 2026-11-16. Narzędzie: GitHub Copilot w VS Code.
+Data opracowania: 2026-11-25. Narzędzie: GitHub Copilot w VS Code.
 
 ## P1 - plan MVP i mapa MVC
 
@@ -41,20 +41,19 @@ przejazd. Przypadek błędny: rezerwacja pojazdu o statusie innym niż
 
 ## P4 - przegląd i poprawka
 
-**Niezgodność wykryta podczas przeglądu:** nieużywany, stary
-`templates/reservation.html` odwoływał się do nieistniejących endpointów
-(`start_ride`, `finish_ride` bez parametrów). Główny przepływ korzysta jednak
-z `vehicle.html` i poprawnych endpointów parametryzowanych.
+**Niezgodność wykryta podczas przeglądu:** nieużywany szablon rezerwacji oraz
+stare szablony i arkusz stylów nie należały do aktywnego przepływu aplikacji.
 
-**Poprawka:** zachowano jeden aktualny przepływ MVC, usunięto zależność tras od
-nieużywanego szablonu i potwierdzono nazwy endpointów testem klienta Flask.
-Nie zmieniono zakresu funkcjonalnego ani schematu danych.
+**Poprawka:** usunięto martwe szablony i drugi arkusz stylów, pozostawiając
+jeden aktywny przepływ MVC. Trasy i zachowanie istniejących funkcji zostały
+zachowane.
 
 ## Rzeczywisty rezultat
 
-Kod został rozdzielony, aplikacja zachowuje istniejące adresy URL i dane
-SQLite, a testy opisane w `docs/testy-v1.0.md` potwierdzają ścieżkę poprawną
-oraz przypadki błędne.
+Kod został rozdzielony na modele, kontrolery i widoki. Aplikacja zachowuje
+trasy i dane SQLite; siedem automatycznych testów oraz ręczna kontrola w
+przeglądarkach obu osób potwierdzają działanie wersji opisanej w
+`docs/testy-v1.0.md`.
 
 ## Punkt 6 - wykonanie zadań projektu
 
@@ -63,15 +62,16 @@ oraz przypadki błędne.
 | 1. Doprecyzowanie | Przygotowano P1, mapę MVC i kryteria F01-F05. |
 | 2. Szkielet i funkcje | Wykonano P2, a następnie wydzielono modele i kontrolery dla F01-F05. |
 | 3. Próba i poprawka | Wykonano testy poprawne i błędne oraz przegląd P4; wynik zapisano w `docs/testy-v1.0.md`. |
-| 4. Wersja 1.0 | README zawiera instalację, inicjalizację bazy i start aplikacji; projekt jest gotowy do oznaczenia `v1.0.0`. |
+| 4. Wersja 1.0 | README zawiera instalację, inicjalizację bazy, start aplikacji i testów; dokumentacja opisuje wydanie `v1.0.0`. |
 
 ## Punkt 7 - potwierdzenie gotowości
 
 - [x] Działa pięć funkcji MVP i pełna ścieżka od widoku do zapisu danych.
 - [x] Model, widok i kontroler są rozdzielone i opisane w `docs/architektura-mvc.md`.
-- [x] Sprawdzono przypadki poprawne i błędne, a dane są trwałe po restarcie.
-- [x] README pozwala uruchomić projekt od początku, a wyniki mają status
-  `działa` lub `niewykonany` zgodnie z rzeczywistym sposobem testu.
+- [x] Sprawdzono przypadki poprawne i błędne oraz trwałość danych po restarcie.
+- [x] Obie osoby wykonały kontrolę aplikacji w przeglądarce.
+- [x] README pozwala uruchomić projekt od początku, a wyniki testów są
+  udokumentowane zgodnie z przeprowadzoną weryfikacją.
 
 Do oddania przygotowano: README, `docs/architektura-mvc.md`,
 `docs/prompty-mvc-v1.0.md` i `docs/testy-v1.0.md`.

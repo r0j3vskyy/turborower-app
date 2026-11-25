@@ -1,6 +1,8 @@
-# TurboRower
+# TurboRower v1.0.0
 
 System zarządzania siecią hulajnóg i rowerów miejskich.
+
+Wersja aplikacji po zakończeniu wdrożenia MVC z Laboratorium 04: **v1.0.0**.
 
 ## Zespół
 
@@ -77,11 +79,11 @@ osobę odpowiedzialną, a gotową zmianę druga osoba sprawdza przed scaleniem.
 - [Technologie](docs/technologie.md)
 - [Prompty v1](docs/prompty-v1.md)
 - [Testy v1](docs/testy-v1.md)
-- [Architektura MVC](docs/architektura-mvc.md)
-- [Prompty MVC v1.0](docs/prompty-mvc-v1.0.md)
-- [Testy v1.0](docs/testy-v1.0.md)
+- [Architektura MVC v1.0.0](docs/architektura-mvc.md)
+- [Prompty MVC v1.0.0](docs/prompty-mvc-v1.0.md)
+- [Testy v1.0.0](docs/testy-v1.0.md)
 
-## Uruchomienie aplikacji v1
+## Uruchomienie aplikacji v1.0.0
 
 Wymagany jest Python 3.13 lub nowszy Python 3.
 
@@ -108,3 +110,11 @@ Otwórz następnie `http://127.0.0.1:5000`. Zatrzymanie serwera: `Ctrl+C`.
 
 Można również utworzyć własne konto przez formularz rejestracji. Baza SQLite
 jest zapisywana lokalnie w `instance/turborower.db` i nie jest dodawana do Git.
+
+## Testy automatyczne
+
+Uruchom zestaw testów odizolowanych od produkcyjnej bazy:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
+```
