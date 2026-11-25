@@ -23,9 +23,17 @@ document.addEventListener("DOMContentLoaded", function () {
         attribution: "&copy; OpenStreetMap"
     }).addTo(map);
     {% for vehicle in vehicles %}
-    L.marker([{{ vehicle.latitude }}, {{ vehicle.longitude }}])
-        .addTo(map)
-        .bindPopup("<strong>{{ vehicle.code }}</strong><br>{{ vehicle.type }} · {{ vehicle.battery_level }}%<br><a href=\"{{ url_for('vehicle_details', vehicle_id=vehicle.id) }}\">Zobacz szczegóły</a>");
+    const marker{{ vehicle.id }} = L.marker([{{ vehicle.latitude }}, {{ vehicle.longitude }}]).addTo(map);
+    const popup{{ vehicle.id }} = document.createElement("div");
+    const label{{ vehicle.id }} = document.createElement("strong");
+    label{{ vehicle.id }}.textContent = {{ (vehicle.code ~ " · " ~ vehicle.type ~ " · bateria " ~ vehicle.battery_level ~ "%")|tojson }};
+    const details{{ vehicle.id }} = document.createElement("button");
+    details{{ vehicle.id }}.type = "button";
+    details{{ vehicle.id }}.className = "button secondary map-details-button";
+    details{{ vehicle.id }}.textContent = "Szczegóły";
+    details{{ vehicle.id }}.dataset.vehicleModal = {{ url_for('vehicle_details_modal', vehicle_id=vehicle.id)|tojson }};
+    popup{{ vehicle.id }}.append(label{{ vehicle.id }}, document.createElement("br"), details{{ vehicle.id }});
+    marker{{ vehicle.id }}.bindPopup(popup{{ vehicle.id }});
     {% endfor %}
 });
 </script>
@@ -38,11 +46,15 @@ document.addEventListener("DOMContentLoaded", function () {
             <h2>{{ vehicle.code }}</h2>
             <p class="muted">Bateria: {{ vehicle.battery_level }}% · Olsztyn</p>
         </div>
-        <a class="button secondary" href="{{ url_for('vehicle_details', vehicle_id=vehicle.id) }}">Szczegóły</a>
+        <button class="button secondary" type="button" data-vehicle-modal="{{ url_for('vehicle_details_modal', vehicle_id=vehicle.id) }}">Szczegóły</button>
     </article>
     {% else %}
     <p class="empty-state">Brak dostępnych pojazdów.</p>
     {% endfor %}
 </section>
+<dialog id="vehicle-modal" class="vehicle-modal" aria-labelledby="vehicle-modal-title">
+    <button class="modal-close" type="button" data-modal-close aria-label="Zamknij szczegóły">×</button>
+    <div id="vehicle-modal-content"></div>
+</dialog>
 {% endblock %}
 

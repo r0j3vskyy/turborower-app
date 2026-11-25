@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from flask import Flask, flash, redirect, render_template, request, send_from_directory, session, url_for
-from database.db import get_connection, query_all, query_one
+from database.db import query_one
 from database.init_db import initialize_database
 from controllers.auth import login as auth_login
 from controllers.auth import logout as auth_logout
@@ -15,11 +15,11 @@ from controllers.vehicles import (
     activity as vehicle_activity,
     cancel_reservation as vehicle_cancel_reservation,
     details as vehicle_details_view,
+    details_modal as render_vehicle_modal,
     list_vehicles as vehicle_list,
     report_vehicle_fault as vehicle_report_fault,
     reserve_vehicle as vehicle_reserve,
 )
-from controllers.vehicles import reserve_vehicle as mvc_reserve_vehicle
 from controllers.rides import (
     cancel_ride as ride_cancel,
     end_ride as ride_end,
@@ -126,10 +126,16 @@ def vehicle_details(vehicle_id: int) -> Any:
     return vehicle_details_view(vehicle_id)
 
 
+@app.get("/vehicles/<int:vehicle_id>/modal")
+@login_required
+def vehicle_details_modal(vehicle_id: int) -> Any:
+    return render_vehicle_modal(vehicle_id)
+
+
 @app.post("/vehicles/<int:vehicle_id>/reserve")
 @login_required
 def reserve_vehicle(vehicle_id: int) -> Any:
-    return mvc_reserve_vehicle(vehicle_id)
+    return vehicle_reserve(vehicle_id)
 
 
 @app.post("/reservations/<int:reservation_id>/cancel")
@@ -199,7 +205,6 @@ def history() -> Any:
 
 
 @app.get("/pricing")
-@login_required
 def pricing() -> Any:
     return render_template(
         "pricing.html",

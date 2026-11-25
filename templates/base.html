@@ -12,8 +12,12 @@
         <a class="brand" href="{{ url_for('index') }}">
             <img src="/assets/logo/logo-dlugie.png" alt="TurboRower">
         </a>
-        {% if current_user %}
         <nav>
+            {% if not current_user %}
+            <a href="{{ url_for('pricing') }}">Cennik</a>
+            <a href="{{ url_for('login') }}">Zaloguj się</a>
+            <a href="{{ url_for('register') }}">Utwórz konto</a>
+            {% else %}
             <a href="{{ url_for('vehicles') }}">Pojazdy</a>
             {% if current_user.role == "USER" %}
             <a href="{{ url_for('activity') }}">Mój pojazd</a>
@@ -26,8 +30,8 @@
             <form method="post" action="{{ url_for('logout') }}" class="inline-form">
                 <button class="link-button" type="submit">Wyloguj</button>
             </form>
+            {% endif %}
         </nav>
-        {% endif %}
     </header>
     <main class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}

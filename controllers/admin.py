@@ -21,7 +21,11 @@ def dashboard() -> Any:
 def change_vehicle_status(vehicle_id: int) -> Any:
     status = request.form.get("status", "")
     if not update_vehicle_status(vehicle_id, status):
-        flash("Nieprawidłowy status lub pojazd nie istnieje.", "error")
+        flash(
+            "Nie można zmienić statusu. Sprawdź wybrany status oraz aktywne "
+            "rezerwacje, przejazdy i zgłoszenia usterek.",
+            "error",
+        )
     else:
         flash("Status pojazdu został zaktualizowany.", "success")
     return redirect(url_for("admin_dashboard"))
