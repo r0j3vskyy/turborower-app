@@ -55,20 +55,20 @@ Operacje zmieniające stan używają transakcji SQLite, a wartości w zapytaniac
 SQL są przekazywane jako parametry. Rezerwacja wygasa po 15 minutach; obsługa
 wygaśnięcia przywraca pojazd do dostępnych, jeśli nie rozpoczęto przejazdu.
 
-## Główne funkcje
+## Główne funkcje i ich stan
 
-| Funkcja | Model | Kontroler / widok |
-|---|---|---|
-| Konto, logowanie i wylogowanie (F01) | `models/auth.py` | `controllers/auth.py`, `templates/login.html` |
-| Lista i szczegóły dostępnych pojazdów (F02) | `models/vehicles.py` | `controllers/vehicles.py`, `templates/vehicles.html`, `templates/vehicle.html` |
-| Rezerwacja i anulowanie (F03) | [`models/vehicles.py`](../models/vehicles.py) | [`app.py`](../app.py), [`controllers/vehicles.py`](../controllers/vehicles.py), [`templates/vehicle_modal.html`](../templates/vehicle_modal.html), [`templates/activity.html`](../templates/activity.html) |
-| Start, koniec i historia przejazdu (F04-F05) | `models/rides.py` | `controllers/rides.py`, `templates/history.html`, `templates/activity.html` |
-| Zgłoszenie usterki (F06) | `models/vehicles.py` | `controllers/vehicles.py`, `templates/fault_report.html` |
-| Monitoring i obsługa floty (F07) | `models/admin.py` | `controllers/admin.py`, `templates/admin.html` |
-| Cennik i strona główna | Konfiguracja `app.py` | Trasy Flask, `templates/pricing.html`, `templates/home.html` |
-| Szczegóły pojazdu w oknie modalnym | `models/vehicles.py` | `controllers/vehicles.py`, `templates/vehicle_modal.html`, lista i mapa pojazdów |
+| Funkcja | Model | Kontroler / widok | Stan |
+|---|---|---|---|
+| Konto, logowanie i wylogowanie (F01) | `models/auth.py` | `controllers/auth.py`, `templates/login.html` | Zaimplementowano |
+| Lista i szczegóły dostępnych pojazdów (F02) | `models/vehicles.py` | `controllers/vehicles.py`, `templates/vehicles.html`, `templates/vehicle.html` | Zaimplementowano |
+| Rezerwacja i anulowanie (F03) | [`models/vehicles.py`](../models/vehicles.py) | [`app.py`](../app.py), [`controllers/vehicles.py`](../controllers/vehicles.py), [`templates/vehicle_modal.html`](../templates/vehicle_modal.html), [`templates/activity.html`](../templates/activity.html) | Zaimplementowano |
+| Start, koniec i historia przejazdu (F04-F05) | `models/rides.py` | `controllers/rides.py`, `templates/history.html`, `templates/activity.html` | Zaimplementowano |
+| Zgłoszenie usterki (F06) | `models/vehicles.py` | `controllers/vehicles.py`, `templates/fault_report.html` | Zaimplementowano |
+| Monitoring i obsługa floty (F07) | `models/admin.py` | `controllers/admin.py`, `templates/admin.html` | Zaimplementowano |
+| Cennik i strona główna | Konfiguracja `app.py` | Trasy Flask, `templates/pricing.html`, `templates/home.html` | Zaimplementowano |
+| Szczegóły pojazdu w oknie modalnym | `models/vehicles.py` | `controllers/vehicles.py`, `templates/vehicle_modal.html`, lista i mapa pojazdów | Zaimplementowano |
+| Wirtualne strefy z ograniczeniami (F08) | — | — | Planowane; poza zakresem v1.0.0 |
 
-F08 (wirtualne strefy z ograniczeniami) pozostaje poza zakresem wersji 1.0.0.
 System nie integruje się z rzeczywistymi urządzeniami IoT ani operatorem
 płatności; statystyki i trasy przejazdów są symulowane.
 

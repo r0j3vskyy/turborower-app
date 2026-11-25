@@ -41,6 +41,16 @@ zestawu:
 Obie próby są sprawdzane przez `test_second_user_cannot_reserve_already_reserved_vehicle`
 w `tests/test_app.py`.
 
+### Zaakceptowany plan
+
+- Prześledzić F03 od trasy w `app.py` przez kontroler do modelu i porównać
+  odpowiedzialności z mapą MVC.
+- Dodać jeden test integracyjny obejmujący poprawną rezerwację i odmowę
+  drugiemu użytkownikowi dla już zarezerwowanego pojazdu.
+- Nie zmieniać logiki produkcyjnej, jeśli obie próby przejdą.
+- Uzupełnić README, mapę MVC, ten opis przepływu, zapis decyzji oraz główny
+  `AGENTS.md`.
+
 ### Polecenie dla agenta i decyzja zespołu
 
 - Polecenie: „Dla F03 prześledź trasę rezerwacji od `app.py` przez kontroler
