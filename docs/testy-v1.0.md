@@ -17,7 +17,7 @@ Uruchom poleceniem:
 .\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-Wynik: **13 testów uruchomiono i wszystkie 13 przeszło**.
+Wynik: **14 testów uruchomiono i wszystkie 14 przeszło**.
 
 | Test | Pokrycie |
 |---|---|
@@ -31,6 +31,7 @@ Wynik: **13 testów uruchomiono i wszystkie 13 przeszło**.
 | `test_registration_and_duplicate_email` | Rejestracja użytkownika i odrzucenie duplikatu e-mail |
 | `test_resolving_faults_only_restores_vehicle_after_all_are_resolved` | Pojazd wraca do dostępnych dopiero po rozwiązaniu wszystkich usterek |
 | `test_ride_start_finish_history_and_fault` | Przejazd, statystyki, historia i zgłoszenie usterki |
+| `test_second_user_cannot_reserve_already_reserved_vehicle` | Rezerwacja dostępnego pojazdu i odrzucenie próby drugiego użytkownika |
 | `test_users_cannot_modify_or_view_other_users_rides` | Własność rezerwacji/przejazdu i prywatność historii |
 | `test_vehicle_modal_is_available_for_authenticated_users` | Szczegóły modalne, akcje pojazdu i ochrona logowaniem |
 | `test_vehicle_reservation_and_admin_denial` | Lista i rezerwacja pojazdu oraz blokada panelu administratora |
