@@ -32,7 +32,7 @@
                 <td>
                     <form class="status-form" method="post" action="{{ url_for('admin_update_vehicle_status', vehicle_id=vehicle.id) }}">
                         <select name="status">
-                            {% for status in ('AVAILABLE', 'RESERVED', 'IN_USE', 'CHARGING', 'DAMAGED', 'UNAVAILABLE') %}
+                            {% for status in ('AVAILABLE', 'CHARGING', 'DAMAGED', 'UNAVAILABLE') %}
                             <option value="{{ status }}" {% if vehicle.status == status %}selected{% endif %}>{{ status }}</option>
                             {% endfor %}
                         </select>

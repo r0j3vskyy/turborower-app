@@ -45,6 +45,7 @@ wygaśnięcia przywraca pojazd do dostępnych, jeśli nie rozpoczęto przejazdu.
 | Zgłoszenie usterki (F06) | `models/vehicles.py` | `controllers/vehicles.py`, `templates/fault_report.html` |
 | Monitoring i obsługa floty (F07) | `models/admin.py` | `controllers/admin.py`, `templates/admin.html` |
 | Cennik i strona główna | Konfiguracja `app.py` | Trasy Flask, `templates/pricing.html`, `templates/home.html` |
+| Szczegóły pojazdu w oknie modalnym | `models/vehicles.py` | `controllers/vehicles.py`, `templates/vehicle_modal.html`, lista i mapa pojazdów |
 
 F08 (wirtualne strefy z ograniczeniami) pozostaje poza zakresem wersji 1.0.0.
 System nie integruje się z rzeczywistymi urządzeniami IoT ani operatorem
@@ -56,6 +57,13 @@ płatności; statystyki i trasy przejazdów są symulowane.
 - `admin_required` ogranicza operacje administracyjne do roli `ADMIN`.
 - Zwykły użytkownik ma rolę `USER`.
 - Lista i mapa wypożyczeń pokazują wyłącznie pojazdy `AVAILABLE`.
+- Status `RESERVED` i `IN_USE` wynika z aktywnych rezerwacji i przejazdów;
+  status pojazdu nie jest zwalniany, gdy pozostają nierozwiązane zgłoszenia
+  usterek.
+- Cennik i rozliczenie przejazdu korzystają z tych samych ustawień opłaty
+  startowej oraz stawki minutowej.
+- Aktywny przejazd wyświetla aktualizowany czas, koszt oraz symulowany
+  przebyty dystans.
 
 ## Weryfikacja
 

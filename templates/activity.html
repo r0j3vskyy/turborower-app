@@ -16,10 +16,10 @@
     <h2>{{ ride.type }} {{ ride.code }}</h2>
     <div class="live-stats">
         <div><strong data-ride-seconds="{{ ride.elapsed_seconds }}">{{ ride.elapsed_minutes }} min</strong><span>Czas</span></div>
-        <div><strong>{{ "%.2f"|format(ride.estimated_cost) }} zł</strong><span>Szacowany koszt</span></div>
-        <div><strong>{{ "%.2f"|format(ride.distance_km) }} km</strong><span>Szacowany dystans</span></div>
+        <div><strong data-live-cost data-start-fee="{{ start_fee }}" data-rate-per-minute="{{ rate_per_minute }}">{{ "%.2f"|format(ride.estimated_cost) }} zł</strong><span>Szacowany koszt</span></div>
+        <div><strong data-live-distance data-vehicle-id="{{ ride.vehicle_id }}">{{ "%.2f"|format(ride.distance_km) }} km</strong><span>Przebyty dystans</span></div>
     </div>
-    <div id="activity-map" class="activity-map"
+    <div class="activity-map"
          data-lat="{{ ride.latitude }}" data-lng="{{ ride.longitude }}"></div>
     <div class="actions">
         <form method="post" action="{{ url_for('end_ride', ride_id=ride.id) }}">
@@ -38,7 +38,7 @@
     <p class="status-text" data-reservation-expiry="{{ reservation.expires_at }}">
         Rezerwacja ważna do {{ reservation.expires_at }}.
     </p>
-    <div id="activity-map" class="activity-map"
+    <div class="activity-map"
          data-lat="{{ reservation.latitude }}" data-lng="{{ reservation.longitude }}"></div>
     <div class="actions">
         <a class="button" href="{{ url_for('vehicle_details', vehicle_id=reservation.vehicle_id) }}">Szczegóły pojazdu</a>

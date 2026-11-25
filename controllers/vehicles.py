@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any
 
-from flask import flash, redirect, render_template, request, session, url_for
+from flask import current_app, flash, redirect, render_template, request, session, url_for
 
 from models.rides import get_active_ride
 from models.vehicles import (
@@ -34,6 +34,19 @@ def details(vehicle_id: int) -> Any:
     user_id = session["user_id"]
     return render_template(
         "vehicle.html",
+        vehicle=vehicle,
+        reservation=get_user_reservation(user_id, vehicle_id),
+        ride=get_active_ride(user_id, vehicle_id),
+    )
+
+
+def details_modal(vehicle_id: int) -> Any:
+    vehicle = get_vehicle(vehicle_id)
+    if vehicle is None:
+        return "Nie znaleziono pojazdu.", 404
+    user_id = session["user_id"]
+    return render_template(
+        "vehicle_modal.html",
         vehicle=vehicle,
         reservation=get_user_reservation(user_id, vehicle_id),
         ride=get_active_ride(user_id, vehicle_id),
@@ -91,9 +104,15 @@ def report_vehicle_fault(vehicle_id: int) -> Any:
 def activity() -> Any:
     reservations = active_reservations_for_user(session["user_id"])
     from models.rides import active_rides_for_user
-    rides = active_rides_for_user(session["user_id"])
+    rides = active_rides_for_user(
+        session["user_id"],
+        current_app.config["START_FEE"],
+        current_app.config["RATE_PER_MINUTE"],
+    )
     return render_template(
         "activity.html",
         reservations=reservations,
         rides=rides,
+        start_fee=current_app.config["START_FEE"],
+        rate_per_minute=current_app.config["RATE_PER_MINUTE"],
     )

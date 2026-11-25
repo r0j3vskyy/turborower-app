@@ -1,5 +1,8 @@
 # TurboRower - Road Map projektu
 
+> Dokument zachowuje pierwotny plan wersji v1. Aktualny stan realizacji po
+> Laboratorium 04 znajduje się w sekcji „Stan realizacji v1.0.0”.
+
 ## 1. Cel i zakres wersji v1
 
 **Tytuł projektu:** TurboRower - system zarządzania siecią hulajnóg i rowerów
@@ -26,11 +29,28 @@ operatora i geofencing zostają odłożone do kolejnych iteracji.
 - **F04** - rozpoczęcie i zakończenie przejazdu,
 - **F05** - historia przejazdów i naliczona opłata.
 
-### Pomysły odłożone do kolejnej iteracji
+### Funkcje planowane po MVP
 
 - **F06** - zgłaszanie usterek pojazdów,
 - **F07** - panel operatora do monitorowania floty,
 - **F08** - definiowanie wirtualnych stref.
+
+## Stan realizacji v1.0.0
+
+W trakcie realizacji projektu zakres został rozszerzony o obsługę usterek i
+panel administratora. Aktualnie:
+
+- F01-F05: zaimplementowane i objęte testami automatycznymi.
+- F06: zgłoszenie usterki ustawia pojazd jako uszkodzony; administrator może
+  obsługiwać i rozwiązywać zgłoszenia.
+- F07: panel administratora pozwala monitorować flotę i wykonywać dozwolone
+  operacje na pojazdach, rezerwacjach i usterkach.
+- Strona główna, cennik i modal szczegółów pojazdu są dodatkowymi elementami
+  interfejsu wydania v1.0.0.
+- F08 pozostaje poza zakresem aktualnego wydania.
+
+Aktualną mapę MVC opisuje `docs/architektura-mvc.md`, a zweryfikowane testy
+przedstawia `docs/testy-v1.0.md`.
 
 ## 2. Cykl iteracji
 

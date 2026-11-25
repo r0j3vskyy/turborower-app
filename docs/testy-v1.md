@@ -1,5 +1,9 @@
 # Testy wersji v1 - TurboRower
 
+> To jest historyczny zapis wcześniejszej iteracji. Aktualne wyniki testów
+> wydania v1.0.0, w tym testy regresyjne i przeglądarkowe, znajdują się w
+> [testy-v1.0.md](./testy-v1.0.md).
+
 ## Środowisko
 
 - Windows
@@ -7,7 +11,8 @@
 - Flask 3.1.3
 - SQLite
 - Testy wykonano przy użyciu klienta testowego Flask.
-- Baza testowa: `instance/turborower.db`.
+- Testy bieżące korzystają z osobnej tymczasowej bazy wskazanej przez
+  `TURBOROWER_DATABASE`; nie używają `instance/turborower.db`.
 
 ## Wyniki
 
@@ -43,7 +48,7 @@
 | T28 | Mapa pokazuje tylko dostępne pojazdy | Na mapie nie pojawiają się pojazdy niedostępne. | Piny są renderowane wyłącznie dla pojazdów ze statusem `AVAILABLE`. | działa |
 | T29 | Aktywny przejazd nie ma anulowania | Widok aktywnego przejazdu zawiera tylko zakończenie przejazdu. | Formularz anulowania został usunięty z widoków `vehicle` i `activity`. | działa |
 | T30 | Cennik jest widoczny | Strona `/pricing` pokazuje opłatę startową i stawkę minutową. | Cennik zawiera 3 zł start + 0,50 zł/min. | działa |
-| T31 | Logo bez napisu | Nagłówek zawiera tylko obraz rower2.png. | Napis tekstowy obok logo został usunięty. | działa |
+| T31 | Logo bez napisu | Nagłówek zawiera samo długie logo TurboRower. | Nagłówek używa obrazu `assets/logo/logo-dlugie.png` bez dodatkowego napisu. | działa |
 
 ## Kontrole zakresu
 
@@ -53,10 +58,11 @@
 - F04 - rozpoczęcie i zakończenie przejazdu: zaimplementowane.
 - F05 - historia przejazdów i opłat: zaimplementowane.
 
-## Scenariusze do dodatkowego sprawdzenia ręcznego
+## Status kontroli ręcznej
 
-Poniższe przypadki są zaimplementowane, ale wymagają jeszcze ręcznego
-potwierdzenia w przeglądarce:
+Kontrolę przeglądarkową u obu osób wykonano. Szczegółowy zakres i bieżący
+wynik kontroli opisano w `docs/testy-v1.0.md`. Poniższe punkty są zachowane
+jako historyczna lista przypadków z wcześniejszej iteracji:
 
 1. Logowanie błędnym hasłem pokazuje komunikat i nie tworzy sesji.
 2. Rejestracja istniejącym adresem e-mail jest odrzucona.

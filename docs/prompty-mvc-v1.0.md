@@ -51,7 +51,7 @@ zachowane.
 ## Rzeczywisty rezultat
 
 Kod został rozdzielony na modele, kontrolery i widoki. Aplikacja zachowuje
-trasy i dane SQLite; siedem automatycznych testów oraz ręczna kontrola w
+trasy i dane SQLite; trzynaście automatycznych testów oraz ręczna kontrola w
 przeglądarkach obu osób potwierdzają działanie wersji opisanej w
 `docs/testy-v1.0.md`.
 

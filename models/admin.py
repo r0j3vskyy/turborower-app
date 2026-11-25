@@ -3,6 +3,7 @@ from __future__ import annotations
 import sqlite3
 
 from database.db import get_connection, query_all
+from models.vehicle_state import synchronize_vehicle_status
 
 
 def dashboard_data() -> dict[str, object]:
@@ -17,7 +18,7 @@ def dashboard_data() -> dict[str, object]:
         FROM reservations r
         JOIN users u ON u.id = r.user_id
         JOIN vehicles v ON v.id = r.vehicle_id
-        WHERE r.status IN ('ACTIVE', 'STARTED')
+        WHERE r.status = 'ACTIVE'
         ORDER BY r.reserved_at DESC
         """
     )
@@ -58,17 +59,47 @@ def dashboard_data() -> dict[str, object]:
 
 
 def update_vehicle_status(vehicle_id: int, status: str) -> bool:
-    allowed_statuses = (
-        "AVAILABLE",
-        "RESERVED",
-        "IN_USE",
-        "CHARGING",
-        "DAMAGED",
-        "UNAVAILABLE",
-    )
+    allowed_statuses = ("AVAILABLE", "CHARGING", "DAMAGED", "UNAVAILABLE")
     if status not in allowed_statuses:
         return False
     with get_connection() as connection:
+        vehicle = connection.execute(
+            "SELECT status FROM vehicles WHERE id = ?",
+            (vehicle_id,),
+        ).fetchone()
+        if vehicle is None:
+            return False
+
+        active_ride = connection.execute(
+            """
+            SELECT 1 FROM rides
+            WHERE vehicle_id = ? AND status = 'ACTIVE'
+            LIMIT 1
+            """,
+            (vehicle_id,),
+        ).fetchone()
+        active_reservation = connection.execute(
+            """
+            SELECT 1 FROM reservations
+            WHERE vehicle_id = ? AND status IN ('ACTIVE', 'STARTED')
+            LIMIT 1
+            """,
+            (vehicle_id,),
+        ).fetchone()
+        unresolved_fault = connection.execute(
+            """
+            SELECT 1 FROM fault_reports
+            WHERE vehicle_id = ? AND status != 'RESOLVED'
+            LIMIT 1
+            """,
+            (vehicle_id,),
+        ).fetchone()
+        if active_ride is not None or active_reservation is not None:
+            return False
+        if status == "AVAILABLE" and unresolved_fault is not None:
+            return False
+        if status in ("CHARGING", "UNAVAILABLE") and unresolved_fault is not None:
+            return False
         cursor = connection.execute(
             "UPDATE vehicles SET status = ? WHERE id = ?",
             (status, vehicle_id),
@@ -100,10 +131,7 @@ def cancel_ride(ride_id: int) -> bool:
             """,
             (ride["user_id"], ride["vehicle_id"]),
         )
-        connection.execute(
-            "UPDATE vehicles SET status = 'AVAILABLE' WHERE id = ?",
-            (ride["vehicle_id"],),
-        )
+        synchronize_vehicle_status(connection, ride["vehicle_id"])
         return True
 
 
@@ -113,7 +141,7 @@ def cancel_reservation(reservation_id: int) -> bool:
             """
             SELECT id, vehicle_id
             FROM reservations
-            WHERE id = ? AND status IN ('ACTIVE', 'STARTED')
+            WHERE id = ? AND status = 'ACTIVE'
             """,
             (reservation_id,),
         ).fetchone()
@@ -123,13 +151,7 @@ def cancel_reservation(reservation_id: int) -> bool:
             "UPDATE reservations SET status = 'CANCELLED' WHERE id = ?",
             (reservation_id,),
         )
-        connection.execute(
-            """
-            UPDATE vehicles SET status = 'AVAILABLE'
-            WHERE id = ? AND status = 'RESERVED'
-            """,
-            (reservation["vehicle_id"],),
-        )
+        synchronize_vehicle_status(connection, reservation["vehicle_id"])
         return True
 
 
@@ -145,8 +167,9 @@ def resolve_fault(report_id: int) -> bool:
             "UPDATE fault_reports SET status = 'RESOLVED' WHERE id = ?",
             (report_id,),
         )
-        connection.execute(
-            "UPDATE vehicles SET status = 'AVAILABLE' WHERE id = ?",
-            (report["vehicle_id"],),
+        synchronize_vehicle_status(
+            connection,
+            report["vehicle_id"],
+            recover_damaged=True,
         )
         return True

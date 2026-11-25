@@ -5,6 +5,7 @@ import math
 from datetime import datetime
 
 from database.db import get_connection, query_all, query_one
+from models.vehicle_state import synchronize_vehicle_status
 
 
 def get_active_ride(user_id: int, vehicle_id: int) -> sqlite3.Row | None:
@@ -18,7 +19,11 @@ def get_active_ride(user_id: int, vehicle_id: int) -> sqlite3.Row | None:
     )
 
 
-def active_rides_for_user(user_id: int) -> list[dict[str, object]]:
+def active_rides_for_user(
+    user_id: int,
+    start_fee: float,
+    rate_per_minute: float,
+) -> list[dict[str, object]]:
     rows = query_all(
         """
         SELECT r.*, v.code, v.type, v.latitude, v.longitude
@@ -35,7 +40,8 @@ def active_rides_for_user(user_id: int) -> list[dict[str, object]]:
         started_at = datetime.fromisoformat(row["started_at"])
         elapsed_minutes = max(0, math.floor((now - started_at).total_seconds() / 60))
         elapsed_seconds = max(0, int((now - started_at).total_seconds()))
-        estimated_cost = 3.00 + elapsed_minutes * 0.50
+        billed_minutes = max(1, math.ceil(elapsed_seconds / 60))
+        estimated_cost = start_fee + billed_minutes * rate_per_minute
         distance_km = round(
             max(0.5, elapsed_minutes * 0.18 + (row["vehicle_id"] % 5) * 0.2),
             2,
@@ -80,10 +86,7 @@ def cancel_active_ride(user_id: int, ride_id: int) -> bool:
             """,
             (user_id, ride["vehicle_id"]),
         )
-        connection.execute(
-            "UPDATE vehicles SET status = 'AVAILABLE' WHERE id = ?",
-            (ride["vehicle_id"],),
-        )
+        synchronize_vehicle_status(connection, ride["vehicle_id"])
         return True
 
 
@@ -91,12 +94,14 @@ def start(user_id: int, reservation_id: int, started_at: str) -> int | None:
     with get_connection() as connection:
         reservation = connection.execute(
             """
-            SELECT vehicle_id FROM reservations
-            WHERE id = ? AND user_id = ? AND status = 'ACTIVE'
+            SELECT r.vehicle_id, v.status AS vehicle_status
+            FROM reservations r
+            JOIN vehicles v ON v.id = r.vehicle_id
+            WHERE r.id = ? AND r.user_id = ? AND r.status = 'ACTIVE'
             """,
             (reservation_id, user_id),
         ).fetchone()
-        if reservation is None:
+        if reservation is None or reservation["vehicle_status"] != "RESERVED":
             return None
         cursor = connection.execute(
             """
@@ -149,10 +154,7 @@ def finish(
             """,
             (user_id, ride["vehicle_id"]),
         )
-        connection.execute(
-            "UPDATE vehicles SET status = 'AVAILABLE' WHERE id = ?",
-            (ride["vehicle_id"],),
-        )
+        synchronize_vehicle_status(connection, ride["vehicle_id"])
         return True
 
 

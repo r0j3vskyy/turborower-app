@@ -5,6 +5,7 @@ import gc
 import tempfile
 import unittest
 from pathlib import Path
+from datetime import datetime, timedelta
 
 
 TEST_DIRECTORY = tempfile.TemporaryDirectory()
@@ -14,6 +15,7 @@ os.environ["TURBOROWER_DATABASE"] = str(TEST_DATABASE)
 from app import app
 from database.db import get_connection
 from database.init_db import initialize_database
+from models.auth import create_user
 
 
 class TurboRowerTestCase(unittest.TestCase):
@@ -66,6 +68,73 @@ class TurboRowerTestCase(unittest.TestCase):
         self.assertIn("Wypożycz pojazd elektryczny w Olsztynie".encode(), response.data)
         self.assertIn(b'href="/login"', response.data)
         self.assertIn(b'href="/register"', response.data)
+
+    def test_vehicle_modal_is_available_for_authenticated_users(self) -> None:
+        vehicle_id = self.get_vehicle_id("R-001")
+        anonymous = self.client.get(f"/vehicles/{vehicle_id}/modal")
+        self.assertEqual(anonymous.status_code, 302)
+
+        self.login_demo()
+        modal = self.client.get(f"/vehicles/{vehicle_id}/modal")
+        self.assertEqual(modal.status_code, 200)
+        self.assertIn(b"Zarezerwuj pojazd", modal.data)
+        self.assertIn(b"Zg\xc5\x82o\xc5\x9b usterk\xc4\x99", modal.data)
+        self.assertIn(b"vehicle-modal-map", modal.data)
+        self.client.post(f"/vehicles/{vehicle_id}/reserve")
+        reserved_modal = self.client.get(f"/vehicles/{vehicle_id}/modal")
+        self.assertIn(b"Rozpocznij przejazd", reserved_modal.data)
+
+    def test_pricing_is_public_and_configured_tariff_is_used_for_rides(self) -> None:
+        pricing = self.client.get("/pricing")
+        self.assertEqual(pricing.status_code, 200)
+        self.assertIn(b"3.00", pricing.data)
+        self.assertIn(b"0.50", pricing.data)
+
+        original_start_fee = app.config["START_FEE"]
+        original_rate = app.config["RATE_PER_MINUTE"]
+        try:
+            app.config["START_FEE"] = 4.25
+            app.config["RATE_PER_MINUTE"] = 0.75
+            self.login_demo()
+            vehicle_id = self.get_vehicle_id("R-001")
+            self.client.post(f"/vehicles/{vehicle_id}/reserve")
+            with get_connection() as connection:
+                reservation = connection.execute(
+                    """
+                    SELECT id FROM reservations
+                    WHERE vehicle_id = ? AND status = 'ACTIVE'
+                    """,
+                    (vehicle_id,),
+                ).fetchone()
+            self.client.post(f"/reservations/{reservation['id']}/start")
+            active_page = self.client.get("/activity")
+            self.assertIn(b'data-start-fee="4.25"', active_page.data)
+            self.assertIn(b'data-rate-per-minute="0.75"', active_page.data)
+            self.assertIn("Przebyty dystans".encode(), active_page.data)
+            with get_connection() as connection:
+                ride = connection.execute(
+                    "SELECT id FROM rides WHERE vehicle_id = ? AND status = 'ACTIVE'",
+                    (vehicle_id,),
+                ).fetchone()
+                connection.execute(
+                    "UPDATE rides SET started_at = ? WHERE id = ?",
+                    (
+                        (datetime.now() - timedelta(seconds=70)).isoformat(
+                            timespec="seconds"
+                        ),
+                        ride["id"],
+                    ),
+                )
+            self.client.post(f"/rides/{ride['id']}/end")
+            with get_connection() as connection:
+                completed = connection.execute(
+                    "SELECT cost FROM rides WHERE id = ?",
+                    (ride["id"],),
+                ).fetchone()
+            self.assertAlmostEqual(completed["cost"], 4.25 + 0.75 * 2)
+        finally:
+            app.config["START_FEE"] = original_start_fee
+            app.config["RATE_PER_MINUTE"] = original_rate
 
     def get_vehicle_id(self, code: str) -> int:
         with get_connection() as connection:
@@ -265,6 +334,162 @@ class TurboRowerTestCase(unittest.TestCase):
                 (fault_vehicle_id,),
             ).fetchone()
         self.assertEqual(available["status"], "AVAILABLE")
+
+    def test_admin_cannot_override_active_fleet_state_or_open_fault(self) -> None:
+        self.login_demo()
+        vehicle_id = self.get_vehicle_id("R-001")
+        self.client.post(f"/vehicles/{vehicle_id}/reserve")
+        with get_connection() as connection:
+            reservation = connection.execute(
+                "SELECT id FROM reservations WHERE vehicle_id = ? AND status = 'ACTIVE'",
+                (vehicle_id,),
+            ).fetchone()
+
+        self.client.post("/logout")
+        self.login_admin()
+        self.client.post(
+            f"/admin/vehicles/{vehicle_id}/status",
+            data={"status": "DAMAGED"},
+        )
+        with get_connection() as connection:
+            status = connection.execute(
+                "SELECT status FROM vehicles WHERE id = ?",
+                (vehicle_id,),
+            ).fetchone()
+        self.assertEqual(status["status"], "RESERVED")
+
+        self.client.post(f"/admin/reservations/{reservation['id']}/cancel")
+        self.client.post("/logout")
+        self.login_demo()
+        self.client.post(
+            f"/vehicles/{vehicle_id}/fault",
+            data={"category": "HAMULCE", "description": "Problem z hamulcem"},
+        )
+        self.client.post("/logout")
+        self.login_admin()
+        self.client.post(
+            f"/admin/vehicles/{vehicle_id}/status",
+            data={"status": "AVAILABLE"},
+        )
+        with get_connection() as connection:
+            damaged = connection.execute(
+                "SELECT status FROM vehicles WHERE id = ?",
+                (vehicle_id,),
+            ).fetchone()
+        self.assertEqual(damaged["status"], "DAMAGED")
+
+    def test_resolving_faults_only_restores_vehicle_after_all_are_resolved(self) -> None:
+        self.login_demo()
+        vehicle_id = self.get_vehicle_id("R-003")
+        for description in ("Usterka pierwsza", "Usterka druga"):
+            self.client.post(
+                f"/vehicles/{vehicle_id}/fault",
+                data={"category": "HAMULCE", "description": description},
+            )
+        with get_connection() as connection:
+            faults = connection.execute(
+                "SELECT id FROM fault_reports WHERE vehicle_id = ? ORDER BY id",
+                (vehicle_id,),
+            ).fetchall()
+        self.assertEqual(len(faults), 2)
+
+        self.client.post("/logout")
+        self.login_admin()
+        self.client.post(f"/admin/faults/{faults[0]['id']}/resolve")
+        with get_connection() as connection:
+            status = connection.execute(
+                "SELECT status FROM vehicles WHERE id = ?",
+                (vehicle_id,),
+            ).fetchone()
+            still_open = connection.execute(
+                "SELECT status FROM fault_reports WHERE id = ?",
+                (faults[1]["id"],),
+            ).fetchone()
+        self.assertEqual(status["status"], "DAMAGED")
+        self.assertEqual(still_open["status"], "OPEN")
+
+        self.client.post(f"/admin/faults/{faults[1]['id']}/resolve")
+        with get_connection() as connection:
+            available = connection.execute(
+                "SELECT status FROM vehicles WHERE id = ?",
+                (vehicle_id,),
+            ).fetchone()
+        self.assertEqual(available["status"], "AVAILABLE")
+
+    def test_fault_report_during_ride_keeps_vehicle_damaged_after_ride_ends(self) -> None:
+        self.login_demo()
+        vehicle_id = self.get_vehicle_id("R-001")
+        self.client.post(f"/vehicles/{vehicle_id}/reserve")
+        with get_connection() as connection:
+            reservation = connection.execute(
+                "SELECT id FROM reservations WHERE vehicle_id = ? AND status = 'ACTIVE'",
+                (vehicle_id,),
+            ).fetchone()
+        self.client.post(f"/reservations/{reservation['id']}/start")
+        with get_connection() as connection:
+            ride = connection.execute(
+                "SELECT id FROM rides WHERE vehicle_id = ? AND status = 'ACTIVE'",
+                (vehicle_id,),
+            ).fetchone()
+        self.client.post(
+            f"/vehicles/{vehicle_id}/fault",
+            data={"category": "HAMULCE", "description": "Usterka w trakcie jazdy"},
+        )
+        self.client.post(f"/rides/{ride['id']}/end")
+        with get_connection() as connection:
+            status = connection.execute(
+                "SELECT status FROM vehicles WHERE id = ?",
+                (vehicle_id,),
+            ).fetchone()
+        self.assertEqual(status["status"], "DAMAGED")
+
+    def test_users_cannot_modify_or_view_other_users_rides(self) -> None:
+        self.login_demo()
+        vehicle_id = self.get_vehicle_id("R-001")
+        self.client.post(f"/vehicles/{vehicle_id}/reserve")
+        with get_connection() as connection:
+            reservation = connection.execute(
+                "SELECT id FROM reservations WHERE vehicle_id = ? AND status = 'ACTIVE'",
+                (vehicle_id,),
+            ).fetchone()
+        other_client = app.test_client()
+        registration = other_client.post(
+            "/register",
+            data={
+                "name": "Inny użytkownik",
+                "email": "other.user@turborower.local",
+                "password": "otherpass123",
+            },
+        )
+        self.assertEqual(registration.status_code, 302)
+        other_client.post(f"/reservations/{reservation['id']}/start")
+        other_client.post(f"/reservations/{reservation['id']}/cancel")
+        with get_connection() as connection:
+            untouched_reservation = connection.execute(
+                "SELECT status FROM reservations WHERE id = ?",
+                (reservation["id"],),
+            ).fetchone()
+        self.assertEqual(untouched_reservation["status"], "ACTIVE")
+
+        self.client.post(f"/reservations/{reservation['id']}/start")
+        with get_connection() as connection:
+            ride = connection.execute(
+                "SELECT id FROM rides WHERE vehicle_id = ? AND status = 'ACTIVE'",
+                (vehicle_id,),
+            ).fetchone()
+        self.assertIsNotNone(ride)
+        other_client.post(f"/rides/{ride['id']}/end")
+        other_client.post(f"/rides/{ride['id']}/cancel")
+        with get_connection() as connection:
+            unchanged = connection.execute(
+                "SELECT status FROM rides WHERE id = ?",
+                (ride["id"],),
+            ).fetchone()
+        self.assertEqual(unchanged["status"], "ACTIVE")
+
+        self.client.post(f"/rides/{ride['id']}/end")
+        other_history = other_client.get("/history")
+        self.assertNotIn(b"R-001", other_history.data)
 
     def test_expired_reservation_returns_vehicle(self) -> None:
         self.login_demo()

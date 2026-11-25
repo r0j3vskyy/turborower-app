@@ -118,3 +118,7 @@ Uruchom zestaw testów odizolowanych od produkcyjnej bazy:
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
 ```
+
+Testy używają odrębnej, tymczasowej bazy SQLite. Szczegółowe scenariusze i
+wyniki, w tym kontrolę przeglądarkową, opisuje
+[dokument testów v1.0.0](docs/testy-v1.0.md).

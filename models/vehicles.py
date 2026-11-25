@@ -4,6 +4,7 @@ import sqlite3
 from datetime import datetime
 
 from database.db import get_connection, query_all, query_one
+from models.vehicle_state import synchronize_vehicle_status
 
 
 def available_vehicles() -> list[sqlite3.Row]:
@@ -81,13 +82,7 @@ def cancel_reservation(user_id: int, reservation_id: int) -> int | None:
             "UPDATE reservations SET status = 'CANCELLED' WHERE id = ?",
             (reservation_id,),
         )
-        connection.execute(
-            """
-            UPDATE vehicles SET status = 'AVAILABLE'
-            WHERE id = ? AND status = 'RESERVED'
-            """,
-            (reservation["vehicle_id"],),
-        )
+        synchronize_vehicle_status(connection, reservation["vehicle_id"])
         return int(reservation["vehicle_id"])
 
 
@@ -116,13 +111,7 @@ def expire_reservations(now: str) -> int:
                 "UPDATE reservations SET status = 'CANCELLED' WHERE id = ?",
                 (reservation["id"],),
             )
-            connection.execute(
-                """
-                UPDATE vehicles SET status = 'AVAILABLE'
-                WHERE id = ? AND status = 'RESERVED'
-                """,
-                (reservation["vehicle_id"],),
-            )
+            synchronize_vehicle_status(connection, reservation["vehicle_id"])
             expired_count += 1
         return expired_count
 
@@ -163,8 +152,5 @@ def create_fault_report(
             """,
             (user_id, vehicle_id, category, description),
         )
-        connection.execute(
-            "UPDATE vehicles SET status = 'DAMAGED' WHERE id = ?",
-            (vehicle_id,),
-        )
+        synchronize_vehicle_status(connection, vehicle_id)
         return True
