@@ -206,6 +206,66 @@ class TurboRowerTestCase(unittest.TestCase):
         denied_admin = self.client.get("/admin", follow_redirects=True)
         self.assertNotIn(b"Zarzad", denied_admin.data)
 
+    def test_second_user_cannot_reserve_already_reserved_vehicle(self) -> None:
+        self.login_demo()
+        vehicle_id = self.get_vehicle_id("R-001")
+        first_reservation = self.client.post(
+            f"/vehicles/{vehicle_id}/reserve",
+            follow_redirects=True,
+        )
+        self.assertEqual(first_reservation.status_code, 200)
+        self.assertIn(b"Zarezerwowany pojazd", first_reservation.data)
+
+        with get_connection() as connection:
+            first_reservation_row = connection.execute(
+                """
+                SELECT user_id FROM reservations
+                WHERE vehicle_id = ? AND status = 'ACTIVE'
+                """,
+                (vehicle_id,),
+            ).fetchone()
+        self.assertIsNotNone(first_reservation_row)
+
+        create_user("Drugi użytkownik", "second@turborower.local", "testpass123")
+        second_client = app.test_client()
+        login = second_client.post(
+            "/login",
+            data={
+                "email": "second@turborower.local",
+                "password": "testpass123",
+            },
+        )
+        self.assertEqual(login.status_code, 302)
+
+        rejected_reservation = second_client.post(
+            f"/vehicles/{vehicle_id}/reserve",
+            follow_redirects=True,
+        )
+        self.assertEqual(rejected_reservation.status_code, 200)
+        self.assertIn(
+            "Ten pojazd nie jest już dostępny.".encode(),
+            rejected_reservation.data,
+        )
+
+        with get_connection() as connection:
+            vehicle = connection.execute(
+                "SELECT status FROM vehicles WHERE id = ?",
+                (vehicle_id,),
+            ).fetchone()
+            active_reservations = connection.execute(
+                """
+                SELECT user_id FROM reservations
+                WHERE vehicle_id = ? AND status = 'ACTIVE'
+                """,
+                (vehicle_id,),
+            ).fetchall()
+        self.assertEqual(vehicle["status"], "RESERVED")
+        self.assertEqual(len(active_reservations), 1)
+        self.assertEqual(
+            active_reservations[0]["user_id"],
+            first_reservation_row["user_id"],
+        )
+
     def test_ride_start_finish_history_and_fault(self) -> None:
         self.login_demo()
         vehicle_id = self.get_vehicle_id("R-001")
